@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#080807">
+  <title>Casa Palm — Visor AR</title>
+
+  <!-- model-viewer for native AR (iOS Quick Look + Android Scene Viewer + WebXR) -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+  <!-- Three.js via importmap — defines bare specifiers for viewer.js -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three":          "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/":  "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <link rel="stylesheet" href="styles/casa-palm.css">
+
+  <style>
+  /* ──────────────────────────────────────────────────────────
+     VIEWER PAGE — full-screen immersive layout
+     ────────────────────────────────────────────────────────── */
+  html, body { width:100%; height:100%; overflow:hidden; }
+
+  /* ── Viewport ─────────────────────────────────────────────── */
+  #vp {
+    position: fixed; inset: 0;
+    background: var(--void);
+  }
+
+  #cv {
+    width: 100%; height: 100%; display: block;
+  }
+
+  /* model-viewer sits over canvas only when AR is active */
+  #mv {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    --poster-color: transparent;
+    opacity: 0; pointer-events: none; z-index: 0;
+  }
+  #mv.ar-active { opacity: 1; pointer-events: all; z-index: 40; }
+
+  /* ── TOP BAR ──────────────────────────────────────────────── */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding-inline: 18px;
+    background: linear-gradient(180deg, rgba(8,8,7,0.92) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  #topbar > * { pointer-events: all; }
+
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+
+  .back-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 14px; border-radius: var(--r);
+    background: rgba(20,20,18,0.80);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    font-family: var(--sans); font-size: 11px; font-weight: 400;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--mist); cursor: pointer; transition: var(--tr);
+  }
+  .back-btn:hover { border-color: var(--border-hi); color: var(--cream); }
+  .back-btn svg { width: 14px; height: 14px; }
+
+  .topbar-logo {
+    font-family: var(--serif); font-size: 17px; font-weight: 400;
+    letter-spacing: 0.14em; color: var(--cream);
+    display: none;
+  }
+  .topbar-logo em { color: var(--gold); font-style: normal; }
+  @media (min-width: 480px) { .topbar-logo { display: block; } }
+
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+  /* ── PRODUCT CHIP ─────────────────────────────────────────── */
+  #chip {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    z-index: 48;
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 18px; border-radius: 100px;
+    background: rgba(12,12,10,0.84);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--border);
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease);
+  }
+  .chip-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold); box-shadow: 0 0 8px var(--gold);
+    animation: chipPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes chipPulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.35;transform:scale(0.7);} }
+  #chip-name { font-size: 12px; font-weight: 500; letter-spacing: 0.04em; }
+  #chip-price { font-size: 11px; color: var(--gold); letter-spacing: 0.08em; }
+
+  /* ── HINT BAR ─────────────────────────────────────────────── */
+  #hint {
+    position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%);
+    z-index: 48;
+    padding: 5px 15px; border-radius: 100px;
+    background: rgba(8,8,7,0.65);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    font-size: 10px; color: var(--ghost);
+    letter-spacing: 0.10em; white-space: nowrap;
+    pointer-events: none; transition: var(--tr);
+  }
+
+  /* ── SCAN RING ─────────────────────────────────────────────── */
+  #scan-ring {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 150px; height: 150px;
+    z-index: 46; pointer-events: none;
+    opacity: 0; transition: opacity 0.4s var(--ease);
+  }
+  #scan-ring.show { opacity: 1; }
+
+  /* ── BOTTOM TOOLBAR ───────────────────────────────────────── */
+  #toolbar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+    height: 88px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 0 16px 18px;
+    background: linear-gradient(0deg, rgba(8,8,7,1) 50%, transparent 100%);
+    pointer-events: none;
+  }
+  #toolbar > * { pointer-events: all; }
+
+  .tool-group {
+    display: flex; gap: 3px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 4px;
+  }
+
+  .tbtn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; padding: 8px 11px; min-width: 48px;
+    border-radius: 8px; border: none; background: transparent;
+    cursor: pointer; color: var(--ghost);
+    font-family: var(--sans); font-size: 8.5px; font-weight: 400;
+    letter-spacing: 0.11em; text-transform: uppercase;
+    transition: var(--tr);
+  }
+  .tbtn svg { width: 17px; height: 17px; }
+  .tbtn:hover { color: var(--mist); background: rgba(255,255,255,0.04); }
+  .tbtn.on {
+    background: rgba(200,169,110,0.14); color: var(--gold);
+  }
+
+  .ar-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 11px 18px; border-radius: var(--r);
+    background: linear-gradient(135deg, var(--gold-d), var(--gold));
+    border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.11em; text-transform: uppercase;
+    color: var(--ink); transition: var(--tr); flex-shrink: 0;
+  }
+  .ar-btn:hover {
+    background: linear-gradient(135deg, var(--gold), var(--gold-l));
+    box-shadow: 0 8px 28px rgba(200,169,110,0.32);
+    transform: translateY(-1px);
+  }
+  .ar-btn:active { transform: scale(0.97); }
+  .ar-btn svg { width: 15px; height: 15px; }
+
+  @media (max-width: 380px) {
+    .tbtn { padding: 7px 8px; min-width: 42px; font-size: 7.5px; }
+    .ar-btn { padding: 11px 13px; font-size: 10px; }
+  }
+
+  /* ── COLOR PANEL ──────────────────────────────────────────── */
+  #color-panel {
+    position: fixed; bottom: 100px; left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    z-index: 55;
+    padding: 18px 20px; border-radius: var(--r-lg);
+    background: rgba(16,16,14,0.96);
+    backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 14px;
+    min-width: 252px;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.26s var(--ease), visibility 0.26s,
+                transform 0.26s var(--spring);
+  }
+  #color-panel.show {
+    opacity: 1; visibility: visible;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .panel-lbl {
+    font-size: 8.5px; letter-spacing: 0.26em;
+    text-transform: uppercase; color: var(--ghost);
+  }
+
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatch {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    transition: var(--tr);
+  }
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.on {
+    border-color: var(--gold);
+    transform: scale(1.10);
+    box-shadow: 0 0 0 3px rgba(200,169,110,0.22);
+  }
+
+  .finish-row { display: flex; gap: 6px; }
+  .finish-btn {
+    padding: 5px 12px; border-radius: 100px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--ghost); font-family: var(--sans);
+    font-size: 10px; letter-spacing: 0.08em;
+    cursor: pointer; transition: var(--tr);
+  }
+  .finish-btn.on, .finish-btn:hover { border-color: var(--gold-d); color: var(--gold); }
+
+  /* ── PRODUCT INFO / CTA SHEET ─────────────────────────────── */
+  #cta-modal {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: flex; align-items: flex-end;
+    opacity: 0; visibility: hidden; transition: var(--tr);
+  }
+  #cta-modal.show { opacity: 1; visibility: visible; }
+
+  .cta-sheet {
+    width: 100%;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 24px 44px;
+    transform: translateY(100%);
+    transition: transform 0.42s var(--spring);
+  }
+  #cta-modal.show .cta-sheet { transform: translateY(0); }
+
+  .cta-handle {
+    width: 36px; height: 4px; background: var(--border-hi);
+    border-radius: 2px; margin: 0 auto 22px;
+  }
+
+  .cta-product-row {
+    display: flex; gap: 16px; align-items: center; margin-bottom: 18px;
+  }
+  .cta-thumb {
+    width: 68px; height: 68px; border-radius: var(--r);
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; overflow: hidden;
+  }
+  .cta-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .cta-info h3 {
+    font-family: var(--serif); font-size: 26px; font-weight: 400;
+    margin-bottom: 4px;
+  }
+  .cta-info p { font-size: 11px; color: var(--mist); letter-spacing: 0.05em; }
+
+  .cta-price-row {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 18px; padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cta-price {
+    font-family: var(--serif); font-size: 38px;
+    font-weight: 400; color: var(--gold);
+  }
+  .cta-note { font-size: 11px; color: var(--ghost); }
+
+  .cta-specs {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px 20px; margin-bottom: 22px;
+  }
+  .spec-item { display: flex; flex-direction: column; gap: 2px; }
+  .spec-lbl { font-size: 8px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--ghost); }
+  .spec-val { font-size: 13px; color: var(--mist); }
+
+  .cta-feats {
+    display: flex; gap: 10px; margin-bottom: 22px; overflow-x: auto;
+  }
+  .cta-feats::-webkit-scrollbar { display: none; }
+  .cta-feat { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 60px; }
+  .feat-ico {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; color: var(--gold);
+  }
+  .cta-feat span {
+    font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ghost); text-align: center; line-height: 1.4;
+  }
+
+  .cta-btns { display: flex; flex-direction: column; gap: 10px; }
+  .btn-cta-primary {
+    padding: 16px;
+    background: linear-gradient(135deg, var(--gold-d), var(--gold));
+    border: none; border-radius: var(--r);
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: var(--ink); cursor: pointer; transition: var(--tr);
+  }
+  .btn-cta-primary:hover {
+    background: linear-gradient(135deg, var(--gold), var(--gold-l));
+    box-shadow: 0 8px 28px rgba(200,169,110,0.30);
+  }
+  .btn-cta-ghost {
+    padding: 16px; background: transparent;
+    border: 1px solid var(--border); border-radius: var(--r);
+    font-family: var(--sans); font-size: 13px; font-weight: 400;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--mist); cursor: pointer; transition: var(--tr);
+  }
+  .btn-cta-ghost:hover { border-color: var(--border-hi); color: var(--cream); }
+  </style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ─── Loading screen ──────────────────────────────────────── -->
+<div id="cp-loader">
+  <div class="loader-logo">Casa <em>Palm</em></div>
+  <p class="loader-sub">Cargando visor 3D</p>
+  <div class="loader-track">
+    <div class="loader-fill" id="loader-fill"></div>
+  </div>
+  <p class="loader-pct" id="loader-pct">0%</p>
+  <p class="loader-hint">
+    <span class="loader-dot"></span>
+    Preparando modelo AR
+  </p>
+</div>
+
+<!-- ─── 3D Viewport ─────────────────────────────────────────── -->
+<div id="vp">
+  <canvas id="cv"></canvas>
+
+  <!-- model-viewer: real AR on mobile (hidden until ar-active) -->
+  <model-viewer
+    id="mv"
+    alt="Producto Casa Palm"
+    shadow-intensity="1.3"
+    shadow-softness="0.85"
+    exposure="1.15"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    ar-scale="fixed"
+    camera-controls
+  ></model-viewer>
+
+  <!-- Product chip -->
+  <div id="chip">
+    <div class="chip-dot"></div>
+    <span id="chip-name">Cargando…</span>
+    <span id="chip-price"></span>
+  </div>
+
+  <!-- Interaction hint -->
+  <div id="hint">Arrastra para rotar · Pellizca para zoom</div>
+
+  <!-- Scan ring (move mode) -->
+  <svg id="scan-ring" viewBox="0 0 150 150">
+    <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(200,169,110,0.13)" stroke-width="1.5" stroke-dasharray="6 10"/>
+    <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(200,169,110,0.65)" stroke-width="2" stroke-dasharray="36 368.2" stroke-linecap="round">
+      <animateTransform attributeName="transform" type="rotate" from="0 75 75" to="360 75 75" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Corner marks -->
+    <path d="M22 22 L22 33 M22 22 L33 22" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" opacity="0.55"/>
+    <path d="M128 22 L128 33 M128 22 L117 22" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" opacity="0.55"/>
+    <path d="M22 128 L22 117 M22 128 L33 128" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" opacity="0.55"/>
+    <path d="M128 128 L128 117 M128 128 L117 128" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" opacity="0.55"/>
+    <circle cx="75" cy="75" r="2.5" fill="rgba(200,169,110,0.55)"/>
+  </svg>
+</div>
+
+<!-- ─── Top bar ──────────────────────────────────────────────── -->
+<div id="topbar">
+  <div class="topbar-left">
+    <button class="back-btn" id="btn-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Catálogo
+    </button>
+    <div class="topbar-logo">Casa <em>Palm</em></div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-icon" id="btn-shot" title="Captura de pantalla">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </button>
+    <button class="btn-icon" id="btn-info" title="Información del producto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8" stroke-linecap="round" stroke-width="2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ─── Bottom toolbar ──────────────────────────────────────── -->
+<footer id="toolbar">
+  <div class="tool-group">
+    <button class="tbtn on" data-tool="orbit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 2a15 15 0 0 1 4 10 15 15 0 0 1-4 10 15 15 0 0 1-4-10 15 15 0 0 1 4-10z"/>
+        <path d="M2 12h20"/>
+      </svg>
+      Vista
+    </button>
+    <button class="tbtn" data-tool="move">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/>
+        <polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/>
+        <line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
+      </svg>
+      Mover
+    </button>
+    <button class="tbtn" data-tool="rotate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Rotar
+    </button>
+    <button class="tbtn" data-tool="scale">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+        <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+      </svg>
+      Escala
+    </button>
+    <button class="tbtn" data-tool="color">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+        <circle cx="8"  cy="9"  r="1" fill="currentColor"/>
+        <circle cx="13" cy="6.5" r="1" fill="currentColor"/>
+        <circle cx="17" cy="10.5" r="1" fill="currentColor"/>
+      </svg>
+      Color
+    </button>
+  </div>
+
+  <button class="ar-btn" id="btn-ar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+      <line x1="12" y1="22.08" x2="12" y2="12"/>
+    </svg>
+    Ver en AR
+  </button>
+</footer>
+
+<!-- ─── Color & finish panel ──────────────────────────────── -->
+<div id="color-panel">
+  <div class="panel-lbl">Color de material</div>
+  <div class="swatches" id="swatches"></div>
+  <div class="panel-lbl">Acabado</div>
+  <div class="finish-row">
+    <button class="finish-btn on" data-finish="matte">Mate</button>
+    <button class="finish-btn" data-finish="satin">Satinado</button>
+    <button class="finish-btn" data-finish="gloss">Brillante</button>
+    <button class="finish-btn" data-finish="metal">Metálico</button>
+  </div>
+</div>
+
+<!-- ─── Product CTA modal ────────────────────────────────── -->
+<div id="cta-modal">
+  <div class="cta-sheet">
+    <div class="cta-handle"></div>
+    <div class="cta-product-row">
+      <div class="cta-thumb">
+        <img id="cta-thumb-img" src="" alt="" width="68" height="68">
+      </div>
+      <div class="cta-info">
+        <h3 id="cta-name">—</h3>
+        <p id="cta-cat">—</p>
+      </div>
+    </div>
+    <div class="cta-price-row">
+      <div class="cta-price" id="cta-price">—</div>
+      <div class="cta-note">IVA incluido · Envío disponible</div>
+    </div>
+    <div class="cta-specs" id="cta-specs"></div>
+    <div class="cta-feats">
+      <div class="cta-feat">
+        <div class="feat-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </div>
+        <span>Envío<br>Express</span>
+      </div>
+      <div class="cta-feat">
+        <div class="feat-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <span>5 años<br>Garantía</span>
+      </div>
+      <div class="cta-feat">
+        <div class="feat-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polyline points="23 7 13.5 15.5 8.5 10.5 1 17"/>
+            <polyline points="17 7 23 7 23 13"/>
+          </svg>
+        </div>
+        <span>30 días<br>Devolución</span>
+      </div>
+      <div class="cta-feat">
+        <div class="feat-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/>
+            <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+        </div>
+        <span>Instalación<br>incluida</span>
+      </div>
+    </div>
+    <div class="cta-btns">
+      <button class="btn-cta-primary" id="btn-buy">Comprar ahora →</button>
+      <button class="btn-cta-ghost"   id="btn-cta-close">Seguir explorando</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="cp-toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  <span id="toast-msg">Listo</span>
+</div>
+
+<!-- ─── App script ────────────────────────────────────────── -->
+<script type="module">
+import { CasaPalmViewer, PALETTE, FINISHES } from './scripts/viewer.js';
+import { getProduct }                        from './scripts/catalog.js';
+
+/* ── 1. Resolve product from URL param ──────────────────────── */
+const params  = new URLSearchParams(location.search);
+const product = getProduct(params.get('product') ?? 'mueble');
+
+/* ── 2. Loading progress helpers ────────────────────────────── */
+const loaderEl   = document.getElementById('cp-loader');
+const fillEl     = document.getElementById('loader-fill');
+const pctEl      = document.getElementById('loader-pct');
+
+function setProgress(v) {
+  fillEl.style.width = v + '%';
+  pctEl.textContent  = Math.round(v) + '%';
+}
+function hideLoader() {
+  setTimeout(() => loaderEl.classList.add('out'), 500);
+}
+
+/* ── 3. State ────────────────────────────────────────────────── */
+const STATE = { tool: 'orbit', color: '#8B6914', finish: 'matte' };
+
+/* ── 4. Build viewer ─────────────────────────────────────────── */
+const viewer = new CasaPalmViewer({
+  canvas:      document.getElementById('cv'),
+  onProgress:  setProgress,
+  onLoad:      () => { hideLoader(); updateHint(); },
+  onError:     () => { hideLoader(); toast('Modelo no disponible, mostrando preview'); },
+});
+viewer._currentProduct = product;
+
+/* ── 5. Load model ───────────────────────────────────────────── */
+viewer.loadModel(product.glb);
+
+/* ── 6. Configure model-viewer for AR ───────────────────────── */
+const mv = document.getElementById('mv');
+mv.setAttribute('src', product.glb);
+if (product.usdz) mv.setAttribute('ios-src', product.usdz);
+mv.setAttribute('alt', product.name);
+
+/* ── 7. Populate UI with product data ───────────────────────── */
+document.title = `${product.name} — Casa Palm`;
+document.getElementById('chip-name').textContent  = product.name;
+document.getElementById('chip-price').textContent = product.priceFormatted;
+
+// CTA sheet
+document.getElementById('cta-name').textContent  = product.name;
+document.getElementById('cta-cat').textContent   = `${product.categoryLabel} · Casa Palm`;
+document.getElementById('cta-price').textContent = product.priceFormatted;
+const thumbImg = document.getElementById('cta-thumb-img');
+thumbImg.src = product.thumbnail; thumbImg.alt = product.name;
+document.getElementById('cta-specs').innerHTML = (product.specs ?? []).map(s =>
+  `<div class="spec-item"><span class="spec-lbl">${s.label}</span><span class="spec-val">${s.value}</span></div>`
+).join('');
+
+/* ── 8. Color swatches ───────────────────────────────────────── */
+const swatchContainer = document.getElementById('swatches');
+PALETTE.forEach((col, i) => {
+  const sw = document.createElement('div');
+  sw.className = `swatch${i === 0 ? ' on' : ''}`;
+  sw.style.background = col.hex;
+  sw.dataset.hex  = col.hex;
+  sw.dataset.name = col.name;
+  sw.title = col.name;
+  sw.addEventListener('click', () => {
+    swatchContainer.querySelectorAll('.swatch').forEach(s => s.classList.remove('on'));
+    sw.classList.add('on');
+    STATE.color = col.hex;
+    viewer.applyMaterial(STATE.color, STATE.finish);
+    toast(col.name);
+  });
+  swatchContainer.appendChild(sw);
+});
+
+/* ── 9. Finish buttons ───────────────────────────────────────── */
+document.querySelectorAll('.finish-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.finish-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    STATE.finish = btn.dataset.finish;
+    viewer.applyMaterial(STATE.color, STATE.finish);
+  });
+});
+
+/* ── 10. Tool buttons ────────────────────────────────────────── */
+const HINTS = {
+  orbit:  'Arrastra para rotar · Pellizca para zoom',
+  move:   'Arrastra para mover el objeto',
+  rotate: 'Arrastra el eje Y (verde) para girar',
+  scale:  'Arrastra para cambiar el tamaño (0.2×–3.5×)',
+  color:  'Selecciona color y tipo de acabado',
+};
+
+function setTool(tool) {
+  STATE.tool = tool;
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.toggle('on', b.dataset.tool === tool));
+  viewer.setTool(tool);
+  document.getElementById('color-panel').classList.toggle('show', tool === 'color');
+  document.getElementById('scan-ring').classList.toggle('show', tool === 'move');
+  updateHint();
+}
+function updateHint() {
+  document.getElementById('hint').textContent = HINTS[STATE.tool] || '';
+}
+
+document.querySelectorAll('.tbtn').forEach(btn => {
+  btn.addEventListener('click', () => setTool(btn.dataset.tool));
+});
+
+/* ── 11. AR launch ───────────────────────────────────────────── */
+document.getElementById('btn-ar').addEventListener('click', () => {
+  const result = viewer.launchAR(mv, product);
+  if (result === 'quicklook') {
+    toast('Abriendo AR Quick Look en iPhone…');
+  } else if (result === 'webxr') {
+    toast('Iniciando experiencia AR…');
+  } else {
+    // Desktop fallback — show CTA
+    openCTA();
+    toast('AR disponible en iPhone y Android');
+  }
+});
+
+/* ── 12. Screenshot ─────────────────────────────────────────── */
+document.getElementById('btn-shot').addEventListener('click', () => {
+  viewer.screenshot(product.name);
+  toast('Captura guardada ✓');
+});
+
+/* ── 13. CTA modal ───────────────────────────────────────────── */
+function openCTA()  { document.getElementById('cta-modal').classList.add('show'); }
+function closeCTA() { document.getElementById('cta-modal').classList.remove('show'); }
+
+document.getElementById('btn-info').addEventListener('click', openCTA);
+document.getElementById('btn-cta-close').addEventListener('click', closeCTA);
+document.getElementById('btn-buy').addEventListener('click', () => {
+  window.open('https://casapalm.com', '_blank');
+});
+document.getElementById('cta-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('cta-modal')) closeCTA();
+});
+
+/* ── 14. Close color panel on outside tap ────────────────────── */
+document.addEventListener('click', e => {
+  const panel  = document.getElementById('color-panel');
+  const colBtn = document.querySelector('.tbtn[data-tool="color"]');
+  if (!panel.contains(e.target) && !colBtn.contains(e.target)) {
+    // Only close if we're in color mode and tapping outside
+    if (STATE.tool === 'color' && !panel.contains(e.target)) {
+      // keep open — user may be interacting with swatches
+    }
+  }
+}, true);
+
+/* ── 15. Back navigation ─────────────────────────────────────── */
+document.getElementById('btn-back').addEventListener('click', () => {
+  history.length > 1 ? history.back() : location.href = 'index.html';
+});
+
+/* ── 16. Toast utility ───────────────────────────────────────── */
+let toastTimer;
+function toast(msg) {
+  document.getElementById('toast-msg').textContent = msg;
+  const el = document.getElementById('toast');
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/* ── 17. Initial hint ────────────────────────────────────────── */
+updateHint();
+</script>
+</body>
+</html>
