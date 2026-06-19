@@ -12,28 +12,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 
   <style>
-  /* ══════════════════════════════════════════════════════════
-     TOKENS
-     ══════════════════════════════════════════════════════════ */
   :root{
-    --void:#080807; --ink:#0E0E0C; --sup:#141412; --sup2:#1C1C1A;
-    --borde:#252522; --borde-hi:#363632;
-    --oro:#C8A96E; --oro-l:#E5D4A8; --oro-d:#7A6540;
+    --void:#080807;--ink:#0E0E0C;--sup:#141412;--sup2:#1C1C1A;
+    --borde:#252522;--borde-hi:#363632;
+    --oro:#C8A96E;--oro-l:#E5D4A8;--oro-d:#7A6540;
     --oro-glow:rgba(200,169,110,.13);
-    --crema:#F5F0E8; --niebla:#9A9288; --fantasma:#524E4A;
+    --crema:#F5F0E8;--niebla:#9A9288;--fantasma:#524E4A;
     --serif:'Cormorant Garamond',Georgia,serif;
     --sans:'DM Sans',system-ui,sans-serif;
     --ease:cubic-bezier(.4,0,.2,1);
     --ease-o:cubic-bezier(0,0,.2,1);
     --spring:cubic-bezier(.34,1.56,.64,1);
     --tr:280ms var(--ease);
-    --r:12px; --r-lg:20px; --r-xl:28px;
-    --max:1360px; --gap:clamp(20px,5vw,72px);
+    --r:12px;--r-lg:20px;--r-xl:28px;
+    --max:1360px;--gap:clamp(20px,5vw,72px);
   }
-
-  /* ══════════════════════════════════════════════════════════
-     RESET
-     ══════════════════════════════════════════════════════════ */
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{background:var(--void);color:var(--crema);font-family:var(--sans);
@@ -45,22 +38,14 @@
   ::selection{background:rgba(200,169,110,.22);color:var(--crema)}
   ::-webkit-scrollbar{width:3px}
   ::-webkit-scrollbar-thumb{background:var(--borde-hi);border-radius:2px}
-
-  /* ══════════════════════════════════════════════════════════
-     LAYOUT
-     ══════════════════════════════════════════════════════════ */
   .wrap{width:100%;max-width:var(--max);margin-inline:auto;padding-inline:var(--gap)}
 
-  /* ══════════════════════════════════════════════════════════
-     GRAIN
-     ══════════════════════════════════════════════════════════ */
+  /* GRAIN */
   .grain{position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.026;
     background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size:180px}
 
-  /* ══════════════════════════════════════════════════════════
-     NAV
-     ══════════════════════════════════════════════════════════ */
+  /* NAV */
   #nav{position:fixed;top:0;left:0;right:0;z-index:900;height:64px;
     display:flex;align-items:center;justify-content:space-between;
     padding-inline:var(--gap);
@@ -83,28 +68,18 @@
   .nav-cta:hover{background:linear-gradient(135deg,var(--oro),var(--oro-l));
     box-shadow:0 4px 22px rgba(200,169,110,.28)}
 
-  /* ══════════════════════════════════════════════════════════
-     HERO
-     ══════════════════════════════════════════════════════════ */
+  /* HERO */
   #hero{position:relative;min-height:100svh;
-    display:flex;flex-direction:column;justify-content:center;
-    overflow:hidden;isolation:isolate}
-
+    display:flex;flex-direction:column;justify-content:center;overflow:hidden;isolation:isolate}
   .h-atm{position:absolute;inset:0;z-index:0;
-    background:
-      radial-gradient(ellipse 70% 55% at 12% 22%,rgba(200,169,110,.07) 0%,transparent 62%),
+    background:radial-gradient(ellipse 70% 55% at 12% 22%,rgba(200,169,110,.07) 0%,transparent 62%),
       radial-gradient(ellipse 55% 65% at 88% 78%,rgba(200,169,110,.04) 0%,transparent 60%),
-      radial-gradient(ellipse 100% 50% at 50% 108%,rgba(10,6,2,.96) 0%,transparent 55%),
-      var(--void)}
+      radial-gradient(ellipse 100% 50% at 50% 108%,rgba(10,6,2,.96) 0%,transparent 55%),var(--void)}
   .h-scan{position:absolute;inset:0;z-index:1;pointer-events:none;
-    background:repeating-linear-gradient(0deg,transparent,transparent 3px,
-      rgba(0,0,0,.014) 3px,rgba(0,0,0,.014) 4px)}
-  .h-grid{position:absolute;bottom:-10%;left:50%;z-index:1;
-    width:180%;height:55%;
-    transform:translateX(-50%) perspective(500px) rotateX(68deg);
-    transform-origin:bottom center;
-    background-image:
-      linear-gradient(rgba(200,169,110,.052) 1px,transparent 1px),
+    background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.014) 3px,rgba(0,0,0,.014) 4px)}
+  .h-grid{position:absolute;bottom:-10%;left:50%;z-index:1;width:180%;height:55%;
+    transform:translateX(-50%) perspective(500px) rotateX(68deg);transform-origin:bottom center;
+    background-image:linear-gradient(rgba(200,169,110,.052) 1px,transparent 1px),
       linear-gradient(90deg,rgba(200,169,110,.052) 1px,transparent 1px);
     background-size:48px 48px;
     mask-image:radial-gradient(ellipse 80% 70% at 50% 100%,black 0%,transparent 70%);
@@ -112,61 +87,43 @@
     opacity:0;animation:gridOn 1.6s var(--ease) 1.4s forwards;pointer-events:none}
   @keyframes gridOn{to{opacity:1}}
   #hcv{position:absolute;inset:0;z-index:2;width:100%;height:100%;pointer-events:none}
-
   .h-body{position:relative;z-index:3;padding-inline:var(--gap);
-    max-width:var(--max);margin-inline:auto;width:100%;
-    padding-top:118px;padding-bottom:96px}
-
+    max-width:var(--max);margin-inline:auto;width:100%;padding-top:118px;padding-bottom:96px}
   .h-eye{display:flex;align-items:center;gap:12px;margin-bottom:30px;
     opacity:0;animation:up .9s var(--ease) .2s forwards}
   .eye-dash{width:26px;height:1px;background:var(--oro-d)}
-  .eye-txt{font-size:9px;font-weight:500;letter-spacing:.30em;
-    text-transform:uppercase;color:var(--oro)}
-
-  .h-title{font-family:var(--serif);
-    font-size:clamp(68px,11.5vw,148px);font-weight:300;line-height:.92;
-    letter-spacing:-.01em;overflow:hidden;margin-bottom:10px}
+  .eye-txt{font-size:9px;font-weight:500;letter-spacing:.30em;text-transform:uppercase;color:var(--oro)}
+  .h-title{font-family:var(--serif);font-size:clamp(68px,11.5vw,148px);
+    font-weight:300;line-height:.92;letter-spacing:-.01em;overflow:hidden;margin-bottom:10px}
   .tl{display:block;overflow:hidden;opacity:0;transform:translateY(105%)}
   .tl:nth-child(1){animation:lineUp 1s var(--ease-o) .36s forwards}
   .tl:nth-child(2){animation:lineUp 1s var(--ease-o) .52s forwards}
   .tl:nth-child(3){color:var(--oro);animation:lineUp 1s var(--ease-o) .68s forwards}
-
   .h-rule{height:1px;width:0;background:linear-gradient(90deg,var(--oro-d),var(--oro));
     margin-block:28px;animation:ruleGrow 1.1s var(--ease) .9s forwards}
   @keyframes ruleGrow{to{width:clamp(60px,13vw,158px)}}
-
   .h-sub{max-width:420px;font-size:clamp(15px,1.55vw,18px);font-weight:300;
-    line-height:1.75;color:var(--niebla);
-    opacity:0;animation:up .9s var(--ease) 1.06s forwards}
-
+    line-height:1.75;color:var(--niebla);opacity:0;animation:up .9s var(--ease) 1.06s forwards}
   .h-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px;
     opacity:0;animation:up .9s var(--ease) 1.26s forwards}
-
-  .h-stats{display:flex;gap:40px;flex-wrap:wrap;
-    margin-top:52px;padding-top:28px;border-top:1px solid var(--borde);
-    opacity:0;animation:up .9s var(--ease) 1.5s forwards}
-  .sn{font-family:var(--serif);font-size:28px;font-weight:400;
-    color:var(--crema);line-height:1;margin-bottom:5px}
+  .h-stats{display:flex;gap:40px;flex-wrap:wrap;margin-top:52px;padding-top:28px;
+    border-top:1px solid var(--borde);opacity:0;animation:up .9s var(--ease) 1.5s forwards}
+  .sn{font-family:var(--serif);font-size:28px;font-weight:400;color:var(--crema);line-height:1;margin-bottom:5px}
   .sl{font-size:9px;letter-spacing:.20em;text-transform:uppercase;color:var(--fantasma)}
-
   .h-scroll{position:absolute;bottom:30px;right:var(--gap);z-index:3;
     display:flex;flex-direction:column;align-items:center;gap:8px;
     opacity:0;animation:up .8s var(--ease) 1.9s forwards;pointer-events:none}
-  .sc-w{font-size:8px;letter-spacing:.28em;text-transform:uppercase;
-    color:var(--fantasma);writing-mode:vertical-rl}
+  .sc-w{font-size:8px;letter-spacing:.28em;text-transform:uppercase;color:var(--fantasma);writing-mode:vertical-rl}
   .sc-l{width:1px;height:34px;background:linear-gradient(180deg,var(--oro-d),transparent);
     animation:tickPulse 2.2s ease-in-out infinite}
   @keyframes tickPulse{0%,100%{opacity:.35;height:34px}50%{opacity:1;height:50px}}
   @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
   @keyframes lineUp{from{opacity:0;transform:translateY(105%)}to{opacity:1;transform:translateY(0)}}
 
-  /* ══════════════════════════════════════════════════════════
-     BOTONES
-     ══════════════════════════════════════════════════════════ */
+  /* BOTONES */
   .btn{display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;
     font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.12em;
-    text-transform:uppercase;border-radius:var(--r);transition:var(--tr);
-    white-space:nowrap;user-select:none}
+    text-transform:uppercase;border-radius:var(--r);transition:var(--tr);white-space:nowrap}
   .btn:active{transform:scale(.97)}
   .btn-g{padding:15px 32px;background:linear-gradient(135deg,var(--oro-d),var(--oro));color:var(--ink)}
   .btn-g:hover{background:linear-gradient(135deg,var(--oro),var(--oro-l));
@@ -174,9 +131,7 @@
   .btn-f{padding:14px 31px;background:transparent;border:1px solid var(--borde-hi);color:var(--niebla)}
   .btn-f:hover{border-color:var(--oro-d);color:var(--crema)}
 
-  /* ══════════════════════════════════════════════════════════
-     MARQUESINA
-     ══════════════════════════════════════════════════════════ */
+  /* MARQUESINA */
   .mq-wrap{overflow:hidden;border-top:1px solid var(--borde);
     border-bottom:1px solid var(--borde);padding:13px 0;background:var(--sup)}
   .mq-track{display:flex;width:max-content;animation:mq 30s linear infinite}
@@ -186,25 +141,19 @@
   .mq-item b{color:var(--oro-d)}
   @keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-  /* ══════════════════════════════════════════════════════════
-     SECCIÓN TÍTULOS
-     ══════════════════════════════════════════════════════════ */
+  /* SECCIONES */
   .sec-tag{font-size:9px;font-weight:500;letter-spacing:.30em;text-transform:uppercase;
     color:var(--oro);margin-bottom:12px}
   .sec-h{font-family:var(--serif);font-size:clamp(34px,5vw,56px);font-weight:300;line-height:1.05}
   .sec-meta{font-size:13px;color:var(--fantasma);margin-top:6px}
 
-  /* ══════════════════════════════════════════════════════════
-     COLECCIÓN
-     ══════════════════════════════════════════════════════════ */
+  /* COLECCIÓN */
   #coleccion{padding:clamp(80px,10vw,130px) 0}
-
   .cards{display:grid;grid-template-columns:repeat(3,1fr);
     gap:clamp(14px,2vw,22px);margin-top:clamp(36px,5vw,56px)}
   @media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.cards{grid-template-columns:1fr}}
 
-  /* Card */
   .card{background:var(--sup);border:1px solid var(--borde);border-radius:var(--r-xl);
     overflow:hidden;cursor:pointer;
     transition:border-color .38s var(--ease),transform .38s var(--ease),box-shadow .38s var(--ease);
@@ -213,39 +162,40 @@
     box-shadow:0 28px 72px rgba(0,0,0,.48)}
   .card:focus-visible{outline:2px solid var(--oro-d);outline-offset:3px}
 
-  .card-vis{position:relative;aspect-ratio:4/3;background:var(--sup2);overflow:hidden}
-  .card-vis img{width:100%;height:100%;object-fit:cover;display:block;
+  /* Visual de card — thumbnail */
+  .card-vis{position:relative;aspect-ratio:4/3;background:var(--sup2);overflow:hidden;
+    display:flex;align-items:center;justify-content:center}
+  .card-vis img{width:100%;height:100%;object-fit:cover;
     transition:transform .55s var(--ease)}
   .card:hover .card-vis img{transform:scale(1.06)}
 
-  /* Overlay hover */
+  /* Placeholder cuando no hay imagen */
+  .card-placeholder{position:absolute;inset:0;display:flex;align-items:center;
+    justify-content:center;color:var(--borde-hi)}
+
   .card-ov{position:absolute;inset:0;
     background:linear-gradient(180deg,transparent 20%,rgba(8,8,7,.88) 100%);
     display:flex;align-items:flex-end;padding:18px;
     opacity:0;transition:opacity .32s var(--ease)}
   .card:hover .card-ov{opacity:1}
-  .ov-btn{width:100%;padding:11px 14px;
-    background:rgba(200,169,110,.92);border:none;border-radius:10px;
-    font-family:var(--sans);font-size:11px;font-weight:500;
+  .ov-btn{width:100%;padding:11px 14px;background:rgba(200,169,110,.92);
+    border:none;border-radius:10px;font-family:var(--sans);font-size:11px;font-weight:500;
     letter-spacing:.12em;text-transform:uppercase;color:var(--ink);
     cursor:pointer;transition:background var(--tr)}
   .ov-btn:hover{background:var(--oro-l)}
 
-  /* Badges */
   .card-bgs{position:absolute;top:14px;left:14px;display:flex;gap:6px;z-index:2}
   .bdg{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;
     font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase}
   .bdg-s{background:var(--sup2);border:1px solid var(--borde);color:var(--niebla)}
   .bdg-g{background:var(--oro-glow);border:1px solid rgba(200,169,110,.28);color:var(--oro)}
-  .bdg-ar{display:flex;align-items:center;gap:5px;
-    padding:4px 10px;border-radius:100px;
+  .bdg-ar{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;
     background:rgba(90,158,114,.12);border:1px solid rgba(90,158,114,.30);
     font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#7EC896}
   .ar-dot{width:5px;height:5px;border-radius:50%;background:#7EC896;
     box-shadow:0 0 6px #7EC896;animation:arBlink 2.3s ease-in-out infinite}
   @keyframes arBlink{0%,100%{opacity:1}50%{opacity:.2}}
 
-  /* Card body */
   .card-body{padding:22px 22px 24px;display:flex;flex-direction:column;flex:1}
   .card-sub{font-size:9px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
     color:var(--fantasma);margin-bottom:8px}
@@ -260,30 +210,24 @@
   .card:hover .card-act{color:var(--oro)}
   .card-act svg{width:14px;height:14px}
 
-  /* ══════════════════════════════════════════════════════════
-     BARRA FEATURES
-     ══════════════════════════════════════════════════════════ */
+  /* FEATURES */
   .feats{display:flex;flex-wrap:wrap;justify-content:center;
     margin-top:clamp(48px,6vw,72px);padding:30px var(--gap);
     background:var(--sup);border:1px solid var(--borde);border-radius:var(--r-xl)}
   .feat{display:flex;align-items:center;gap:12px;padding:12px 26px;
     flex:1;min-width:150px;border-right:1px solid var(--borde)}
   .feat:last-child{border-right:none}
-  @media(max-width:640px){
-    .feat{border-right:none;border-bottom:1px solid var(--borde)}
-    .feat:last-child{border-bottom:none}}
-  .feat-ico{width:38px;height:38px;border-radius:10px;
-    background:var(--sup2);border:1px solid var(--borde);
-    display:flex;align-items:center;justify-content:center;color:var(--oro);flex-shrink:0}
+  @media(max-width:640px){.feat{border-right:none;border-bottom:1px solid var(--borde)}.feat:last-child{border-bottom:none}}
+  .feat-ico{width:38px;height:38px;border-radius:10px;background:var(--sup2);
+    border:1px solid var(--borde);display:flex;align-items:center;justify-content:center;
+    color:var(--oro);flex-shrink:0}
   .feat-ico svg{width:16px;height:16px}
   .feat-t{font-size:11px;font-weight:500;color:var(--crema);margin-bottom:2px}
   .feat-s{font-size:10px;color:var(--fantasma)}
 
-  /* ══════════════════════════════════════════════════════════
-     EXPERIENCIA AR
-     ══════════════════════════════════════════════════════════ */
-  #experiencia{padding:clamp(80px,10vw,140px) 0;
-    background:var(--sup);border-top:1px solid var(--borde);border-bottom:1px solid var(--borde)}
+  /* EXPERIENCIA AR */
+  #experiencia{padding:clamp(80px,10vw,140px) 0;background:var(--sup);
+    border-top:1px solid var(--borde);border-bottom:1px solid var(--borde)}
   .exp-lay{display:grid;grid-template-columns:1fr 1fr;
     gap:clamp(40px,7vw,100px);align-items:center}
   @media(max-width:820px){.exp-lay{grid-template-columns:1fr}.exp-r{order:-1}}
@@ -295,9 +239,9 @@
   .paso-t p{font-size:13px;color:var(--fantasma);line-height:1.65}
   .exp-ctas{margin-top:36px;display:flex;gap:12px;flex-wrap:wrap}
 
-  /* Teléfono mockup */
+  /* TELÉFONO MOCKUP — visual AR explicativo */
   .exp-r{display:flex;justify-content:center;align-items:center;position:relative}
-  .tel{width:min(260px,62vw);aspect-ratio:9/19.5;
+  .tel{width:min(240px,58vw);aspect-ratio:9/19.5;
     border:1.5px solid var(--borde-hi);border-radius:40px;
     background:var(--sup2);overflow:hidden;position:relative;
     box-shadow:0 0 0 7px var(--sup),0 0 0 8px var(--borde),0 48px 88px rgba(0,0,0,.58)}
@@ -305,12 +249,21 @@
     width:80px;height:22px;background:var(--ink);border-radius:100px;z-index:3}
   .tel-screen{position:absolute;inset:0;
     background:linear-gradient(155deg,#0C1C12 0%,#091208 50%,var(--void) 100%);
-    display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .ar-ring{width:110px;height:110px;position:relative;
-    display:flex;align-items:center;justify-content:center}
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+
+  /* Pasos visuales dentro del teléfono */
+  .tel-steps{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 20px}
+  .tel-step{display:flex;align-items:center;gap:8px;width:100%}
+  .tel-step-n{font-family:var(--serif);font-size:18px;color:var(--oro-d);
+    font-weight:300;flex-shrink:0;width:20px}
+  .tel-step-t{font-size:8px;letter-spacing:.08em;color:var(--niebla);line-height:1.4}
+
+  /* Anillo AR en el teléfono */
+  .ar-ring{width:90px;height:90px;position:relative;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .r-ext{position:absolute;inset:0;border:1px solid rgba(200,169,110,.22);
     border-radius:50%;animation:breathe 3s ease-in-out infinite}
-  .r-int{position:absolute;inset:14px;border:1px dashed rgba(200,169,110,.14);
+  .r-int{position:absolute;inset:12px;border:1px dashed rgba(200,169,110,.14);
     border-radius:50%;animation:breathe 3s ease-in-out .8s infinite reverse}
   .r-spin{position:absolute;inset:0;border-radius:50%;overflow:hidden}
   .r-spin::after{content:'';position:absolute;inset:0;border-radius:50%;
@@ -319,15 +272,12 @@
   @keyframes breathe{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.08);opacity:1}}
   @keyframes spin{to{transform:rotate(360deg)}}
   .ar-ico{color:var(--oro);opacity:.72;z-index:1}
-  .tel-fur{position:absolute;bottom:30%;left:50%;transform:translateX(-50%);
-    animation:float 4s ease-in-out infinite}
-  @keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
-  .tel-est{position:absolute;bottom:13%;left:50%;transform:translateX(-50%);
-    padding:4px 14px;border-radius:100px;
+  .tel-est{padding:4px 12px;border-radius:100px;
     background:rgba(200,169,110,.10);border:1px solid rgba(200,169,110,.26);
-    font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--oro);white-space:nowrap}
-  .tel-tag{position:absolute;top:18%;right:-26px;
+    font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--oro)}
+
+  /* Tag flotante */
+  .tel-tag{position:absolute;top:18%;right:-24px;
     background:var(--sup);border:1px solid var(--borde-hi);
     border-radius:var(--r);padding:10px 14px;
     box-shadow:0 10px 32px rgba(0,0,0,.5)}
@@ -335,9 +285,7 @@
   .tt-pre{font-family:var(--serif);font-size:15px;color:var(--oro)}
   @media(max-width:480px){.tel-tag{display:none}}
 
-  /* ══════════════════════════════════════════════════════════
-     MANIFIESTO
-     ══════════════════════════════════════════════════════════ */
+  /* MANIFIESTO */
   #manifiesto{padding:clamp(80px,10vw,120px) 0;text-align:center}
   .mani-q{font-family:var(--serif);font-size:clamp(28px,4.5vw,58px);
     font-weight:300;font-style:italic;line-height:1.3;color:var(--crema);
@@ -346,18 +294,14 @@
   .mani-src{margin-top:24px;font-size:9px;letter-spacing:.26em;
     text-transform:uppercase;color:var(--fantasma)}
 
-  /* ══════════════════════════════════════════════════════════
-     CTA FINAL
-     ══════════════════════════════════════════════════════════ */
-  #cta-final{padding:clamp(80px,10vw,140px) 0;
-    background:var(--sup);border-top:1px solid var(--borde);
-    text-align:center;position:relative;overflow:hidden}
+  /* CTA FINAL */
+  #cta-final{padding:clamp(80px,10vw,140px) 0;background:var(--sup);
+    border-top:1px solid var(--borde);text-align:center;position:relative;overflow:hidden}
   #cta-final::before{content:'';position:absolute;top:-80px;left:50%;
     transform:translateX(-50%);width:600px;height:300px;
     background:radial-gradient(ellipse,rgba(200,169,110,.07) 0%,transparent 70%);
     pointer-events:none}
-  .cta-eti{font-size:9px;letter-spacing:.30em;text-transform:uppercase;
-    color:var(--oro-d);margin-bottom:16px}
+  .cta-eti{font-size:9px;letter-spacing:.30em;text-transform:uppercase;color:var(--oro-d);margin-bottom:16px}
   .cta-h{font-family:var(--serif);font-size:clamp(38px,6.5vw,80px);
     font-weight:300;line-height:1.05;color:var(--crema);
     max-width:660px;margin-inline:auto;margin-bottom:32px}
@@ -365,9 +309,7 @@
   .cta-acc{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
   .cta-nota{margin-top:22px;font-size:11px;color:var(--fantasma);letter-spacing:.06em}
 
-  /* ══════════════════════════════════════════════════════════
-     FOOTER
-     ══════════════════════════════════════════════════════════ */
+  /* FOOTER */
   footer{padding:52px 0 40px;border-top:1px solid var(--borde)}
   .pie{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px}
   @media(max-width:640px){.pie{grid-template-columns:1fr;gap:28px}}
@@ -384,9 +326,7 @@
     display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .pie-copy{font-size:10px;color:var(--fantasma)}
 
-  /* ══════════════════════════════════════════════════════════
-     REVEAL POR SCROLL
-     ══════════════════════════════════════════════════════════ */
+  /* REVEAL */
   [data-r]{opacity:0;transform:translateY(26px);
     transition:opacity .72s var(--ease),transform .72s var(--ease)}
   [data-r].vis{opacity:1;transform:translateY(0)}
@@ -400,9 +340,7 @@
 
 <div class="grain" aria-hidden="true"></div>
 
-<!-- ════════════════════════════════
-     NAV
-     ════════════════════════════════ -->
+<!-- NAV -->
 <nav id="nav">
   <a href="index.html" class="nav-logo">Casa <em>Palm</em></a>
   <div class="nav-links">
@@ -410,37 +348,32 @@
     <a href="#experiencia" class="nav-link">Experiencia AR</a>
     <a href="#"            class="nav-link">Contacto</a>
   </div>
-  <button class="nav-cta" onclick="location.href='visor.html?product=mueble'">Ver en AR</button>
+  <!-- ✅ viewer.html (no visor.html) -->
+  <button class="nav-cta" onclick="location.href='viewer.html?product=mueble'">Ver en AR</button>
 </nav>
 
-<!-- ════════════════════════════════
-     HERO
-     ════════════════════════════════ -->
+<!-- HERO -->
 <section id="hero">
-  <div class="h-atm"  aria-hidden="true"></div>
+  <div class="h-atm" aria-hidden="true"></div>
   <div class="h-scan" aria-hidden="true"></div>
   <div class="h-grid" aria-hidden="true"></div>
-  <canvas id="hcv"   aria-hidden="true"></canvas>
+  <canvas id="hcv" aria-hidden="true"></canvas>
 
-  <div class="h-body wrap">
+  <div class="h-body">
     <p class="h-eye">
       <span class="eye-dash"></span>
       <span class="eye-txt">Colección 2025 · Spatial Retail</span>
     </p>
-
     <h1 class="h-title">
       <span class="tl">Visualiza</span>
       <span class="tl">diseño en</span>
       <span class="tl">tu espacio.</span>
     </h1>
-
     <div class="h-rule"></div>
-
     <p class="h-sub">
       Una nueva experiencia de spatial retail para Casa Palm.<br>
       Muebles a escala real en tu hogar, antes de comprar.
     </p>
-
     <div class="h-ctas">
       <button class="btn btn-g"
         onclick="document.getElementById('coleccion').scrollIntoView({behavior:'smooth'})">
@@ -454,7 +387,6 @@
         ¿Qué es AR?
       </button>
     </div>
-
     <div class="h-stats">
       <div><div class="sn">3</div><div class="sl">Modelos AR listos</div></div>
       <div><div class="sn">1:1</div><div class="sl">Escala real exacta</div></div>
@@ -468,19 +400,14 @@
   </div>
 </section>
 
-<!-- ════════════════════════════════
-     MARQUESINA
-     ════════════════════════════════ -->
+<!-- MARQUESINA -->
 <div class="mq-wrap" aria-hidden="true">
   <div class="mq-track" id="mq"></div>
 </div>
 
-<!-- ════════════════════════════════
-     COLECCIÓN
-     ════════════════════════════════ -->
+<!-- COLECCIÓN -->
 <section id="coleccion">
   <div class="wrap">
-
     <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px" data-r>
       <div>
         <p class="sec-tag">Catálogo</p>
@@ -491,15 +418,17 @@
 
     <div class="cards">
 
-      <!-- ── ARMARIO CLÁSICO ── -->
+      <!-- ARMARIO CLÁSICO -->
+      <!-- ✅ viewer.html?product=mueble -->
       <article class="card" tabindex="0" role="button"
-               onclick="location.href='visor.html?product=mueble'"
-               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='visor.html?product=mueble'}"
-               data-r data-d="1">
+        onclick="location.href='viewer.html?product=mueble'"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='viewer.html?product=mueble'}"
+        data-r data-d="1">
         <div class="card-vis">
-          <img src="miniaturas/mueble.svg" alt="Armario Clásico"
-               width="400" height="300" loading="eager" decoding="async"
-               onerror="this.style.display='none'">
+          <!-- ✅ thumbnails/ (no miniaturas/) -->
+          <img src="thumbnails/mueble.svg" alt="Armario Clásico"
+            width="400" height="300" loading="eager" decoding="async"
+            onerror="this.style.display='none'">
           <div class="card-ov">
             <button class="ov-btn" tabindex="-1">Ver en 3D →</button>
           </div>
@@ -526,15 +455,17 @@
         </div>
       </article>
 
-      <!-- ── SILLA VINTAGE ── -->
+      <!-- SILLA VINTAGE -->
+      <!-- ✅ viewer.html?product=silla-vintage -->
       <article class="card" tabindex="0" role="button"
-               onclick="location.href='visor.html?product=silla-vintage'"
-               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='visor.html?product=silla-vintage'}"
-               data-r data-d="2">
+        onclick="location.href='viewer.html?product=silla-vintage'"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='viewer.html?product=silla-vintage'}"
+        data-r data-d="2">
         <div class="card-vis">
-          <img src="miniaturas/silla-vintage.svg" alt="Silla Vintage"
-               width="400" height="300" loading="lazy" decoding="async"
-               onerror="this.style.display='none'">
+          <!-- ✅ thumbnails/ -->
+          <img src="thumbnails/silla-vintage.svg" alt="Silla Vintage"
+            width="400" height="300" loading="lazy" decoding="async"
+            onerror="this.style.display='none'">
           <div class="card-ov">
             <button class="ov-btn" tabindex="-1">Ver en 3D →</button>
           </div>
@@ -560,15 +491,17 @@
         </div>
       </article>
 
-      <!-- ── LAVABO MINIMAL ── -->
+      <!-- LAVABO MINIMAL -->
+      <!-- ✅ viewer.html?product=lavabo -->
       <article class="card" tabindex="0" role="button"
-               onclick="location.href='visor.html?product=lavabo'"
-               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='visor.html?product=lavabo'}"
-               data-r data-d="3">
+        onclick="location.href='viewer.html?product=lavabo'"
+        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='viewer.html?product=lavabo'}"
+        data-r data-d="3">
         <div class="card-vis">
-          <img src="miniaturas/lavabo.svg" alt="Lavabo Minimal"
-               width="400" height="300" loading="lazy" decoding="async"
-               onerror="this.style.display='none'">
+          <!-- ✅ thumbnails/ -->
+          <img src="thumbnails/lavabo.svg" alt="Lavabo Minimal"
+            width="400" height="300" loading="lazy" decoding="async"
+            onerror="this.style.display='none'">
           <div class="card-ov">
             <button class="ov-btn" tabindex="-1">Ver en 3D →</button>
           </div>
@@ -596,7 +529,7 @@
 
     </div><!-- /cards -->
 
-    <!-- Features bar -->
+    <!-- Features -->
     <div class="feats" data-r data-d="4">
       <div class="feat">
         <div class="feat-ico">
@@ -614,7 +547,7 @@
             <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>
           </svg>
         </div>
-        <div><div class="feat-t">Escala 1:1</div><div class="feat-s">Dimensiones exactas</div></div>
+        <div><div class="feat-t">Escala 1:1</div><div class="feat-s">Dimensiones reales</div></div>
       </div>
       <div class="feat">
         <div class="feat-ico">
@@ -639,79 +572,101 @@
   </div>
 </section>
 
-<!-- ════════════════════════════════
-     EXPERIENCIA AR
-     ════════════════════════════════ -->
+<!-- EXPERIENCIA AR — rediseñada para ser más clara -->
 <section id="experiencia">
   <div class="wrap">
     <div class="exp-lay">
 
       <div>
         <div data-r>
-          <p class="sec-tag">Tecnología</p>
-          <h2 class="sec-h">Diseñá tu espacio<br>antes de comprarlo.</h2>
+          <p class="sec-tag">Realidad Aumentada</p>
+          <h2 class="sec-h">Probá el mueble<br>en tu hogar<br>antes de comprarlo.</h2>
         </div>
-        <p style="font-size:15px;color:var(--niebla);font-weight:300;line-height:1.75;margin-top:18px;max-width:400px" data-r data-d="1">
-          Usá la cámara de tu teléfono para ver muebles a escala real en tu hogar. Sin apps, sin instalaciones.
+        <p style="font-size:15px;color:var(--niebla);font-weight:300;line-height:1.8;margin-top:18px;max-width:400px" data-r data-d="1">
+          Con la cámara de tu iPhone o Android, colocás el mueble a escala real en cualquier ambiente de tu casa. Sin descargar ninguna app.
         </p>
         <div class="exp-pasos" data-r data-d="2">
           <div class="paso">
             <div class="paso-n">01</div>
-            <div class="paso-t"><h4>Elegí un producto</h4><p>Explorá el catálogo y seleccioná lo que querés visualizar.</p></div>
+            <div class="paso-t">
+              <h4>Elegí un producto</h4>
+              <p>Tocá "Ver en 3D" en cualquier card del catálogo.</p>
+            </div>
           </div>
           <div class="paso">
             <div class="paso-n">02</div>
-            <div class="paso-t"><h4>Activá la cámara AR</h4><p>Tocá "Ver en AR". Apuntá al suelo: el sistema detecta la superficie solo.</p></div>
+            <div class="paso-t">
+              <h4>Tocá "Ver en AR"</h4>
+              <p>En el visor 3D, presioná el botón dorado. Apuntá la cámara al piso.</p>
+            </div>
           </div>
           <div class="paso">
             <div class="paso-n">03</div>
-            <div class="paso-t"><h4>Colocá y decidí</h4><p>Movés, girás y tomás una captura para compartir con tu diseñador.</p></div>
+            <div class="paso-t">
+              <h4>Colocá y explorá</h4>
+              <p>Movés, girás y cambiás colores. Tomás una foto para compartir.</p>
+            </div>
           </div>
         </div>
         <div class="exp-ctas" data-r data-d="3">
-          <button class="btn btn-g" onclick="location.href='visor.html?product=mueble'" style="font-size:13px;padding:15px 30px">
-            Activar AR ahora
+          <button class="btn btn-g"
+            onclick="location.href='viewer.html?product=mueble'"
+            style="font-size:13px;padding:15px 30px">
+            Probar ahora en AR
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
               <line x1="12" y1="22.08" x2="12" y2="12"/>
             </svg>
           </button>
-          <button class="btn btn-f" onclick="document.getElementById('coleccion').scrollIntoView({behavior:'smooth'})" style="font-size:13px;padding:14px 29px">
-            Ver colección
+          <button class="btn btn-f"
+            onclick="document.getElementById('coleccion').scrollIntoView({behavior:'smooth'})"
+            style="font-size:13px;padding:14px 29px">
+            Ver catálogo
           </button>
         </div>
       </div>
 
-      <!-- Mockup teléfono -->
+      <!-- TELÉFONO: muestra los 3 pasos claramente -->
       <div class="exp-r" data-r data-d="2">
         <div class="tel">
           <div class="tel-notch"></div>
           <div class="tel-screen">
+
+            <!-- Anillo AR + icono -->
             <div class="ar-ring">
               <div class="r-ext"></div>
               <div class="r-int"></div>
               <div class="r-spin"></div>
-              <svg class="ar-ico" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+              <svg class="ar-ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
                 <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
                 <line x1="12" y1="22.08" x2="12" y2="12"/>
               </svg>
             </div>
-            <div class="tel-fur">
-              <svg width="88" height="58" viewBox="0 0 400 280" fill="none">
-                <rect x="70" y="50" width="260" height="180" rx="3" stroke="#C8A96E" stroke-width="1.4" opacity=".62"/>
-                <rect x="64" y="44" width="272" height="12" rx="2" stroke="#7A6540" stroke-width=".7" opacity=".45"/>
-                <line x1="200" y1="50" x2="200" y2="230" stroke="#C8A96E" stroke-width=".9" opacity=".28"/>
-                <circle cx="185" cy="145" r="5" fill="none" stroke="#C8A96E" stroke-width="1.2" opacity=".72"/>
-                <circle cx="215" cy="145" r="5" fill="none" stroke="#C8A96E" stroke-width="1.2" opacity=".72"/>
-                <rect x="76" y="230" width="248" height="8" rx="1" stroke="#7A6540" stroke-width=".6" opacity=".38"/>
-                <ellipse cx="200" cy="241" rx="128" ry="5" fill="rgba(200,169,110,.08)"/>
-              </svg>
+
+            <div class="tel-est">Apuntá al piso</div>
+
+            <!-- Pasos resumidos dentro del tel -->
+            <div class="tel-steps">
+              <div class="tel-step">
+                <div class="tel-step-n">1</div>
+                <div class="tel-step-t">Abrí el visor 3D</div>
+              </div>
+              <div class="tel-step">
+                <div class="tel-step-n">2</div>
+                <div class="tel-step-t">Tocá "Ver en AR"</div>
+              </div>
+              <div class="tel-step">
+                <div class="tel-step-n">3</div>
+                <div class="tel-step-t">Colocá en tu espacio</div>
+              </div>
             </div>
-            <div class="tel-est">Objeto detectado · 1:1</div>
+
           </div>
         </div>
+
+        <!-- Tag flotante del producto -->
         <div class="tel-tag">
           <div class="tt-nom">Armario Clásico</div>
           <div class="tt-pre">$1.290</div>
@@ -722,9 +677,7 @@
   </div>
 </section>
 
-<!-- ════════════════════════════════
-     MANIFIESTO
-     ════════════════════════════════ -->
+<!-- MANIFIESTO -->
 <section id="manifiesto">
   <div data-r>
     <blockquote class="mani-q">
@@ -736,16 +689,17 @@
   </div>
 </section>
 
-<!-- ════════════════════════════════
-     CTA FINAL
-     ════════════════════════════════ -->
+<!-- CTA FINAL -->
 <section id="cta-final">
   <div class="wrap">
     <div data-r>
       <p class="cta-eti">Experiencia inmersiva</p>
-      <h2 class="cta-h">Descubre el futuro<br>del <em>retail inmersivo.</em></h2>
+      <h2 class="cta-h">Descubrí el futuro<br>del <em>retail inmersivo.</em></h2>
       <div class="cta-acc">
-        <button class="btn btn-g" onclick="location.href='visor.html?product=mueble'" style="font-size:13px;padding:17px 38px">
+        <!-- ✅ viewer.html -->
+        <button class="btn btn-g"
+          onclick="location.href='viewer.html?product=mueble'"
+          style="font-size:13px;padding:17px 38px">
           Iniciar experiencia AR
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
@@ -753,8 +707,10 @@
             <line x1="12" y1="22.08" x2="12" y2="12"/>
           </svg>
         </button>
-        <button class="btn btn-f" onclick="document.getElementById('coleccion').scrollIntoView({behavior:'smooth'})" style="font-size:13px;padding:16px 37px">
-          Ver toda la colección
+        <button class="btn btn-f"
+          onclick="document.getElementById('coleccion').scrollIntoView({behavior:'smooth'})"
+          style="font-size:13px;padding:16px 37px">
+          Ver colección
         </button>
       </div>
       <p class="cta-nota">Sin descarga · iPhone &amp; Android · WebXR · Escala real</p>
@@ -762,9 +718,7 @@
   </div>
 </section>
 
-<!-- ════════════════════════════════
-     FOOTER
-     ════════════════════════════════ -->
+<!-- FOOTER -->
 <footer>
   <div class="wrap">
     <div class="pie">
@@ -774,9 +728,10 @@
       </div>
       <div class="pie-col">
         <h5>Colección</h5>
-        <a href="visor.html?product=mueble">Armario Clásico</a>
-        <a href="visor.html?product=silla-vintage">Silla Vintage</a>
-        <a href="visor.html?product=lavabo">Lavabo Minimal</a>
+        <!-- ✅ viewer.html -->
+        <a href="viewer.html?product=mueble">Armario Clásico</a>
+        <a href="viewer.html?product=silla-vintage">Silla Vintage</a>
+        <a href="viewer.html?product=lavabo">Lavabo Minimal</a>
       </div>
       <div class="pie-col">
         <h5>Empresa</h5>
@@ -792,83 +747,58 @@
   </div>
 </footer>
 
-<!-- ════════════════════════════════
-     JS  — sin módulos, sin imports
-     funciona directo en GitHub Pages
-     ════════════════════════════════ -->
 <script>
-/* Nav glassmorphism */
-window.addEventListener('scroll', function() {
-  document.getElementById('nav').classList.toggle('on', window.scrollY > 50);
-}, { passive: true });
+/* NAV scroll */
+window.addEventListener('scroll',function(){
+  document.getElementById('nav').classList.toggle('on',window.scrollY>50);
+},{passive:true});
 
-/* ── Partículas hero ─────────────────────────────────────── */
-(function() {
-  var cv  = document.getElementById('hcv');
-  var ctx = cv.getContext('2d');
-  function resize() { cv.width = cv.offsetWidth; cv.height = cv.offsetHeight; }
-  resize();
-  window.addEventListener('resize', resize, { passive: true });
-
-  var pts = [];
-  for (var i = 0; i < 68; i++) {
-    pts.push({
-      x:  Math.random(), y: Math.random(),
-      vx: (Math.random() - .5) * .00022,
-      vy: -(Math.random() * .00035 + .0001),
-      r:  Math.random() * 1.7 + .25,
-      a:  Math.random() * .28 + .06,
-      ph: Math.random() * Math.PI * 2
-    });
-  }
-
-  function draw() {
-    var W = cv.width, H = cv.height;
-    ctx.clearRect(0, 0, W, H);
-    var t = performance.now() * .001;
-    for (var i = 0; i < pts.length; i++) {
-      var p  = pts[i];
-      var al = p.a * (.62 + .38 * Math.sin(t * .72 + p.ph));
-      var px = p.x * W, py = p.y * H;
-      var g  = ctx.createRadialGradient(px, py, 0, px, py, p.r * 5.5);
-      g.addColorStop(0, 'rgba(200,169,110,' + (al * .6) + ')');
-      g.addColorStop(1, 'rgba(200,169,110,0)');
-      ctx.beginPath(); ctx.arc(px, py, p.r * 5.5, 0, Math.PI * 2);
-      ctx.fillStyle = g; ctx.fill();
-      ctx.beginPath(); ctx.arc(px, py, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(232,212,168,' + Math.min(al * 1.9, 1) + ')';
-      ctx.fill();
-      p.x += p.vx; p.y += p.vy;
-      if (p.y < -.04) { p.y = 1.04; p.x = Math.random(); }
-      if (p.x < -.02) p.x = 1.02;
-      if (p.x >  1.02) p.x = -.02;
+/* PARTÍCULAS hero */
+(function(){
+  var cv=document.getElementById('hcv'),ctx=cv.getContext('2d');
+  function r(){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;}
+  r();window.addEventListener('resize',r,{passive:true});
+  var pts=[];
+  for(var i=0;i<68;i++)pts.push({
+    x:Math.random(),y:Math.random(),
+    vx:(Math.random()-.5)*.00022,vy:-(Math.random()*.00035+.0001),
+    r:Math.random()*1.7+.25,a:Math.random()*.28+.06,ph:Math.random()*Math.PI*2
+  });
+  (function d(){
+    var W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);
+    var t=performance.now()*.001;
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i],al=p.a*(.62+.38*Math.sin(t*.72+p.ph));
+      var px=p.x*W,py=p.y*H;
+      var g=ctx.createRadialGradient(px,py,0,px,py,p.r*5.5);
+      g.addColorStop(0,'rgba(200,169,110,'+(al*.6)+')');
+      g.addColorStop(1,'rgba(200,169,110,0)');
+      ctx.beginPath();ctx.arc(px,py,p.r*5.5,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+      ctx.beginPath();ctx.arc(px,py,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(232,212,168,'+Math.min(al*1.9,1)+')';ctx.fill();
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.y<-.04){p.y=1.04;p.x=Math.random();}
+      if(p.x<-.02)p.x=1.02;if(p.x>1.02)p.x=-.02;
     }
-    requestAnimationFrame(draw);
-  }
-  draw();
-}());
+    requestAnimationFrame(d);
+  })();
+})();
 
-/* ── Marquesina ──────────────────────────────────────────── */
-(function() {
-  var palabras = ['Mobiliario','Sillas','Baños','AR Premium',
-                  'Escala Real','Sin Descarga','iOS & Android','WebXR','Colección 2025'];
-  var html = palabras.map(function(w) {
-    return '<div class="mq-item">' + w + '<b>·</b></div>';
-  }).join('');
-  var el = document.getElementById('mq');
-  el.innerHTML = html + html;
-}());
+/* MARQUESINA */
+(function(){
+  var w=['Mobiliario','Sillas','Baños','AR Premium',
+    'Escala Real','Sin Descarga','iOS &amp; Android','WebXR','Colección 2025'];
+  var h=w.map(function(x){return'<div class="mq-item">'+x+'<b>·</b></div>';}).join('');
+  document.getElementById('mq').innerHTML=h+h;
+})();
 
-/* ── Reveal por scroll ───────────────────────────────────── */
-(function() {
-  var io = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); }
-    });
-  }, { threshold: .10, rootMargin: '0px 0px -52px 0px' });
-
-  document.querySelectorAll('[data-r]').forEach(function(el) { io.observe(el); });
-}());
+/* SCROLL REVEAL */
+(function(){
+  var io=new IntersectionObserver(function(e){
+    e.forEach(function(x){if(x.isIntersecting){x.target.classList.add('vis');io.unobserve(x.target);}});
+  },{threshold:.10,rootMargin:'0px 0px -52px 0px'});
+  document.querySelectorAll('[data-r]').forEach(function(el){io.observe(el);});
+})();
 </script>
 
 </body>
