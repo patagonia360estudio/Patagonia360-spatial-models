@@ -8,21 +8,18 @@
   <meta name="theme-color" content="#080807">
   <title>Casa Palm — Visor AR</title>
 
-  <!-- model-viewer: AR nativo iOS + Android -->
+  <!-- ═══ THREE.JS r134 — scripts globales, sin módulos, sin importmap ═══ -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/TransformControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/environments/RoomEnvironment.js"></script>
+
+  <!-- ═══ MODEL-VIEWER — AR nativo iOS + Android ═══ -->
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
-  <!-- Three.js via importmap -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three":         "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
-
   <style>
-  /* ── Reset ──────────────────────────────────────────────── */
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;height:100%;overflow:hidden;background:#080807}
   :root{
@@ -31,51 +28,50 @@
     --sup:#141412;--sup2:#1C1C1A;--borde:#252522;--borde-hi:#363632;
     --serif:'Cormorant Garamond',Georgia,serif;
     --sans:'DM Sans',system-ui,sans-serif;
-    --tr:280ms cubic-bezier(.4,0,.2,1);
-    --r:12px;--r-lg:20px;
+    --tr:280ms cubic-bezier(.4,0,.2,1);--r:12px;--r-lg:20px;
   }
   body{color:var(--crema);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 
-  /* ── Loader ──────────────────────────────────────────────── */
+  /* LOADER */
   #loader{position:fixed;inset:0;z-index:9999;background:#080807;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     transition:opacity .8s ease,visibility .8s}
   #loader.out{opacity:0;visibility:hidden;pointer-events:none}
   .l-logo{font-family:var(--serif);font-size:clamp(32px,6vw,52px);font-weight:300;
-    letter-spacing:.2em;opacity:0;animation:fadeUp .7s ease .1s forwards}
+    letter-spacing:.2em}
   .l-logo em{color:var(--oro);font-style:normal}
   .l-sub{font-size:9px;letter-spacing:.28em;text-transform:uppercase;
-    color:var(--fantasma);margin:6px 0 52px;opacity:0;animation:fadeUp .7s ease .3s forwards}
+    color:var(--fantasma);margin:6px 0 48px}
   .l-track{width:160px;height:1px;background:var(--borde);position:relative;overflow:hidden}
   .l-fill{position:absolute;left:0;top:0;height:100%;width:0%;
-    background:linear-gradient(90deg,var(--oro-d),var(--oro),var(--oro-l));transition:width .15s ease}
-  .l-pct{margin-top:12px;font-size:10px;letter-spacing:.16em;color:var(--fantasma);
-    opacity:0;animation:fadeUp .7s ease .5s forwards}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    background:linear-gradient(90deg,var(--oro-d),var(--oro),var(--oro-l));
+    transition:width .15s ease}
+  .l-pct{margin-top:12px;font-size:10px;letter-spacing:.16em;color:var(--fantasma)}
 
-  /* ── Viewport ────────────────────────────────────────────── */
+  /* CANVAS */
   #vp{position:fixed;inset:0}
   #cv{width:100%;height:100%;display:block}
 
-  /* model-viewer oculto — solo se activa para AR */
+  /* model-viewer oculto — solo para AR */
   #mv{position:absolute;inset:0;width:100%;height:100%;
     --poster-color:transparent;opacity:0;pointer-events:none;z-index:0}
-  /* 
-    ⬆ NO ponemos 'ar-active' class en este elemento.
-    El AR se lanza con activateAR() o con el enlace iOS.
-  */
 
-  /* ── Top bar ─────────────────────────────────────────────── */
+  /* iOS Quick Look — enlace pre-existente en DOM (Safari requiere esto) */
+  #ios-ar{position:fixed;top:-2px;left:-2px;width:1px;height:1px;overflow:hidden}
+  #ios-ar img{width:1px;height:1px}
+
+  /* TOP BAR */
   #topbar{position:fixed;top:0;left:0;right:0;z-index:50;height:60px;
     display:flex;align-items:center;justify-content:space-between;padding:0 18px;
     background:linear-gradient(180deg,rgba(8,8,7,.92) 0%,transparent 100%);
     pointer-events:none}
   #topbar>*{pointer-events:all}
-  .back{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--r);
-    background:rgba(20,20,18,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  .back{display:flex;align-items:center;gap:7px;padding:8px 14px;
+    border-radius:var(--r);background:rgba(20,20,18,.82);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     border:1px solid var(--borde);font-family:var(--sans);font-size:11px;
-    letter-spacing:.10em;text-transform:uppercase;color:var(--niebla);
-    cursor:pointer;transition:var(--tr);text-decoration:none}
+    letter-spacing:.10em;text-transform:uppercase;
+    color:var(--niebla);cursor:pointer;transition:var(--tr);text-decoration:none}
   .back:hover{border-color:var(--borde-hi);color:var(--crema)}
   .back svg{width:14px;height:14px}
   .top-logo{font-family:var(--serif);font-size:17px;font-weight:400;
@@ -84,17 +80,19 @@
   @media(min-width:480px){.top-logo{display:block}}
   .topright{display:flex;gap:8px}
   .ibtn{width:40px;height:40px;border-radius:50%;
-    background:rgba(20,20,18,.80);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-    border:1px solid var(--borde);color:var(--niebla);display:flex;
-    align-items:center;justify-content:center;cursor:pointer;transition:var(--tr)}
+    background:rgba(20,20,18,.80);backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);border:1px solid var(--borde);
+    color:var(--niebla);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:var(--tr)}
   .ibtn svg{width:16px;height:16px}
   .ibtn:hover,.ibtn.on{border-color:var(--oro-d);color:var(--oro);
     background:rgba(200,169,110,.10)}
 
-  /* ── Chip producto ───────────────────────────────────────── */
+  /* CHIP PRODUCTO */
   #chip{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:48;
-    display:flex;align-items:center;gap:9px;padding:7px 18px;border-radius:100px;
-    background:rgba(12,12,10,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    display:flex;align-items:center;gap:9px;padding:7px 18px;
+    border-radius:100px;background:rgba(12,12,10,.86);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
     border:1px solid var(--borde);pointer-events:none;white-space:nowrap}
   .chip-dot{width:6px;height:6px;border-radius:50%;background:var(--oro);
     box-shadow:0 0 8px var(--oro);animation:pulse 2.4s ease-in-out infinite}
@@ -102,20 +100,21 @@
   #chip-name{font-size:12px;font-weight:500;letter-spacing:.04em}
   #chip-price{font-size:11px;color:var(--oro);letter-spacing:.08em}
 
-  /* ── Hint ────────────────────────────────────────────────── */
+  /* HINT */
   #hint{position:fixed;bottom:98px;left:50%;transform:translateX(-50%);z-index:48;
     padding:5px 15px;border-radius:100px;
-    background:rgba(8,8,7,.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    border:1px solid var(--borde);font-size:10px;color:var(--fantasma);
-    letter-spacing:.10em;white-space:nowrap;pointer-events:none;transition:var(--tr)}
+    background:rgba(8,8,7,.65);backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);border:1px solid var(--borde);
+    font-size:10px;color:var(--fantasma);letter-spacing:.10em;
+    white-space:nowrap;pointer-events:none;transition:var(--tr)}
 
-  /* ── Scan ring ───────────────────────────────────────────── */
+  /* SCAN RING */
   #scan{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
     width:150px;height:150px;z-index:46;pointer-events:none;
     opacity:0;transition:opacity .4s ease}
   #scan.show{opacity:1}
 
-  /* ── Toolbar ─────────────────────────────────────────────── */
+  /* TOOLBAR */
   #toolbar{position:fixed;bottom:0;left:0;right:0;z-index:50;height:88px;
     display:flex;align-items:center;justify-content:center;gap:8px;
     padding:0 16px 18px;
@@ -133,26 +132,28 @@
   .tbtn:hover{color:var(--niebla);background:rgba(255,255,255,.04)}
   .tbtn.on{background:rgba(200,169,110,.15);color:var(--oro)}
 
-  /* Botón AR — principal */
-  .ar-btn{display:flex;align-items:center;gap:7px;padding:11px 20px;border-radius:var(--r);
+  .ar-btn{display:flex;align-items:center;gap:7px;padding:12px 20px;
+    border-radius:var(--r);
     background:linear-gradient(135deg,var(--oro-d),var(--oro));
-    border:none;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:500;
-    letter-spacing:.11em;text-transform:uppercase;color:#080807;
-    transition:var(--tr);flex-shrink:0}
+    border:none;cursor:pointer;font-family:var(--sans);font-size:12px;
+    font-weight:500;letter-spacing:.11em;text-transform:uppercase;
+    color:#080807;transition:var(--tr);flex-shrink:0}
   .ar-btn:hover{background:linear-gradient(135deg,var(--oro),var(--oro-l));
     box-shadow:0 8px 28px rgba(200,169,110,.32);transform:translateY(-1px)}
   .ar-btn:active{transform:scale(.97)}
   .ar-btn svg{width:15px;height:15px}
-  @media(max-width:380px){.tbtn{padding:7px 8px;min-width:42px;font-size:7.5px}
+  @media(max-width:380px){
+    .tbtn{padding:7px 8px;min-width:42px;font-size:7.5px}
     .ar-btn{padding:11px 13px;font-size:10px}}
 
-  /* ── Panel de colores ────────────────────────────────────── */
+  /* PANEL DE COLORES */
   #color-panel{position:fixed;bottom:104px;left:50%;
     transform:translateX(-50%) translateY(12px);z-index:55;
     padding:18px 20px;border-radius:var(--r-lg);
-    background:rgba(16,16,14,.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-    border:1px solid var(--borde);display:flex;flex-direction:column;gap:14px;
-    min-width:252px;opacity:0;visibility:hidden;
+    background:rgba(16,16,14,.97);backdrop-filter:blur(24px);
+    -webkit-backdrop-filter:blur(24px);border:1px solid var(--borde);
+    display:flex;flex-direction:column;gap:14px;min-width:252px;
+    opacity:0;visibility:hidden;
     transition:opacity .26s ease,visibility .26s,transform .26s cubic-bezier(.34,1.56,.64,1)}
   #color-panel.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
   .p-lbl{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--fantasma)}
@@ -160,29 +161,33 @@
   .sw{width:28px;height:28px;border-radius:50%;border:2px solid transparent;
     cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:var(--tr)}
   .sw:hover{transform:scale(1.15)}
-  .sw.on{border-color:var(--oro);transform:scale(1.10);box-shadow:0 0 0 3px rgba(200,169,110,.22)}
-  .finish-row{display:flex;gap:6px}
+  .sw.on{border-color:var(--oro);transform:scale(1.10);
+    box-shadow:0 0 0 3px rgba(200,169,110,.22)}
+  .finish-row{display:flex;gap:6px;flex-wrap:wrap}
   .fbtn{padding:5px 12px;border-radius:100px;border:1px solid var(--borde);
     background:transparent;color:var(--fantasma);font-family:var(--sans);
     font-size:10px;letter-spacing:.08em;cursor:pointer;transition:var(--tr)}
   .fbtn.on,.fbtn:hover{border-color:var(--oro-d);color:var(--oro)}
 
-  /* ── CTA Modal ───────────────────────────────────────────── */
+  /* CTA MODAL */
   #cta-modal{position:fixed;inset:0;z-index:100;
-    background:rgba(0,0,0,.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-    display:flex;align-items:flex-end;opacity:0;visibility:hidden;transition:var(--tr)}
+    background:rgba(0,0,0,.65);backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    display:flex;align-items:flex-end;
+    opacity:0;visibility:hidden;transition:var(--tr)}
   #cta-modal.show{opacity:1;visibility:visible}
   .cta-sheet{width:100%;background:var(--sup);border-top:1px solid var(--borde);
     border-radius:24px 24px 0 0;padding:20px 24px 44px;
-    transform:translateY(100%);transition:transform .42s cubic-bezier(.34,1.56,.64,1)}
+    transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
   #cta-modal.show .cta-sheet{transform:translateY(0)}
   .cta-handle{width:36px;height:4px;background:var(--borde-hi);
     border-radius:2px;margin:0 auto 22px}
   .cta-row{display:flex;gap:14px;align-items:center;margin-bottom:16px}
-  .cta-thumb-box{width:64px;height:64px;border-radius:var(--r);
+  .cta-img-box{width:64px;height:64px;border-radius:var(--r);
     background:var(--sup2);border:1px solid var(--borde);
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
-  .cta-thumb-box img{width:100%;height:100%;object-fit:cover}
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;overflow:hidden}
+  .cta-img-box img{width:100%;height:100%;object-fit:cover}
   .cta-info h3{font-family:var(--serif);font-size:24px;font-weight:400;margin-bottom:4px}
   .cta-info p{font-size:11px;color:var(--niebla)}
   .cta-price-row{display:flex;align-items:baseline;gap:10px;
@@ -190,27 +195,31 @@
   .cta-price{font-family:var(--serif);font-size:36px;font-weight:400;color:var(--oro)}
   .cta-note{font-size:11px;color:var(--fantasma)}
   .cta-specs{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:20px}
-  .spec{display:flex;flex-direction:column;gap:2px}
+  .spec-item{display:flex;flex-direction:column;gap:2px}
   .spec-l{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--fantasma)}
   .spec-v{font-size:13px;color:var(--niebla)}
   .cta-btns{display:flex;flex-direction:column;gap:10px}
   .btn-gold{padding:16px;background:linear-gradient(135deg,var(--oro-d),var(--oro));
-    border:none;border-radius:var(--r);font-family:var(--sans);font-size:13px;font-weight:500;
-    letter-spacing:.10em;text-transform:uppercase;color:#080807;cursor:pointer;transition:var(--tr)}
+    border:none;border-radius:var(--r);font-family:var(--sans);font-size:13px;
+    font-weight:500;letter-spacing:.10em;text-transform:uppercase;
+    color:#080807;cursor:pointer;transition:var(--tr)}
   .btn-gold:hover{background:linear-gradient(135deg,var(--oro),var(--oro-l));
     box-shadow:0 8px 28px rgba(200,169,110,.30)}
-  .btn-ghost{padding:16px;background:transparent;border:1px solid var(--borde);border-radius:var(--r);
-    font-family:var(--sans);font-size:13px;font-weight:400;letter-spacing:.08em;
-    text-transform:uppercase;color:var(--niebla);cursor:pointer;transition:var(--tr)}
+  .btn-ghost{padding:16px;background:transparent;border:1px solid var(--borde);
+    border-radius:var(--r);font-family:var(--sans);font-size:13px;font-weight:400;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--niebla);
+    cursor:pointer;transition:var(--tr)}
   .btn-ghost:hover{border-color:var(--borde-hi);color:var(--crema)}
 
-  /* ── Toast ───────────────────────────────────────────────── */
-  #toast{position:fixed;top:74px;left:50%;transform:translateX(-50%) translateY(-10px);
-    z-index:9000;padding:9px 18px;border-radius:100px;
-    background:rgba(16,16,14,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-    border:1px solid rgba(200,169,110,.38);display:flex;align-items:center;gap:8px;
-    font-size:12px;color:var(--crema);white-space:nowrap;pointer-events:none;
-    opacity:0;visibility:hidden;
+  /* TOAST */
+  #toast{position:fixed;top:74px;left:50%;
+    transform:translateX(-50%) translateY(-10px);z-index:9000;
+    padding:9px 18px;border-radius:100px;
+    background:rgba(16,16,14,.97);backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(200,169,110,.38);
+    display:flex;align-items:center;gap:8px;font-size:12px;color:var(--crema);
+    white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden;
     transition:opacity .26s ease,visibility .26s,transform .26s cubic-bezier(.34,1.56,.64,1)}
   #toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
   #toast svg{width:13px;height:13px;color:var(--oro);flex-shrink:0}
@@ -218,7 +227,7 @@
 </head>
 <body>
 
-<!-- ── Loader ──────────────────────────────────────────── -->
+<!-- LOADER -->
 <div id="loader">
   <div class="l-logo">Casa <em>Palm</em></div>
   <p class="l-sub">Cargando visor 3D</p>
@@ -226,48 +235,36 @@
   <p class="l-pct" id="lpct">0%</p>
 </div>
 
-<!-- ── Viewport ────────────────────────────────────────── -->
+<!-- VIEWPORT -->
 <div id="vp">
   <canvas id="cv"></canvas>
 
-  <!--
-    model-viewer: permanece en el DOM siempre.
-    iOS Quick Look y Android Scene Viewer/WebXR usan este elemento.
-    src e ios-src se setean por JS según el producto.
-  -->
-  <model-viewer
-    id="mv"
+  <!-- model-viewer: AR Android (Scene Viewer / WebXR) -->
+  <model-viewer id="mv"
     alt="Producto Casa Palm"
-    shadow-intensity="1.2"
-    exposure="1.1"
-    ar
-    ar-modes="webxr scene-viewer quick-look"
+    shadow-intensity="1.2" exposure="1.1"
+    ar ar-modes="webxr scene-viewer quick-look"
     ar-scale="fixed"
-    camera-controls
-  ></model-viewer>
+    camera-controls>
+  </model-viewer>
 
-  <!--
-    ENLACE AR PARA iOS — debe existir en el DOM desde el inicio.
-    Safari/iOS no permite activar AR con elementos creados dinámicamente.
-    Se actualiza el href por JS antes del click.
-  -->
-  <a id="ios-ar-link" rel="ar" href="#"
-    style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px">
+  <!-- iOS AR Quick Look — DEBE estar en DOM desde el inicio -->
+  <a id="ios-ar" rel="ar" href="#">
     <img id="ios-ar-img" src="" alt="">
   </a>
 </div>
 
-<!-- ── Chip producto ────────────────────────────────────── -->
+<!-- CHIP PRODUCTO -->
 <div id="chip">
   <div class="chip-dot"></div>
   <span id="chip-name">Cargando…</span>
   <span id="chip-price"></span>
 </div>
 
-<!-- ── Hint ─────────────────────────────────────────────── -->
-<div id="hint">Arrastra para rotar · Pellizca para zoom</div>
+<!-- HINT -->
+<div id="hint">Arrastra para rotar &nbsp;·&nbsp; Pellizca para zoom</div>
 
-<!-- ── Scan ring ────────────────────────────────────────── -->
+<!-- SCAN RING -->
 <svg id="scan" viewBox="0 0 150 150">
   <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(200,169,110,.13)" stroke-width="1.5" stroke-dasharray="6 10"/>
   <circle cx="75" cy="75" r="65" fill="none" stroke="rgba(200,169,110,.65)" stroke-width="2" stroke-dasharray="36 368" stroke-linecap="round">
@@ -279,10 +276,10 @@
   <path d="M128 128L128 117M128 128L117 128" stroke="#C8A96E" stroke-width="1.5" stroke-linecap="round" opacity=".55"/>
 </svg>
 
-<!-- ── Top bar ───────────────────────────────────────────── -->
+<!-- TOP BAR -->
 <div id="topbar">
   <div style="display:flex;align-items:center;gap:10px">
-    <a class="back" id="btn-back" href="index.html">
+    <a class="back" href="index.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
@@ -297,7 +294,7 @@
         <circle cx="12" cy="13" r="4"/>
       </svg>
     </button>
-    <button class="ibtn" id="btn-info" title="Información">
+    <button class="ibtn" id="btn-info" title="Info">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <circle cx="12" cy="12" r="10"/>
         <line x1="12" y1="16" x2="12" y2="12"/>
@@ -307,7 +304,7 @@
   </div>
 </div>
 
-<!-- ── Toolbar ───────────────────────────────────────────── -->
+<!-- TOOLBAR -->
 <div id="toolbar">
   <div class="tgrp">
     <button class="tbtn on" data-tool="orbit">
@@ -361,7 +358,7 @@
   </button>
 </div>
 
-<!-- ── Panel de colores ──────────────────────────────────── -->
+<!-- PANEL COLORES -->
 <div id="color-panel">
   <div class="p-lbl">Color de material</div>
   <div class="swatches" id="swatches"></div>
@@ -374,12 +371,12 @@
   </div>
 </div>
 
-<!-- ── CTA Modal ─────────────────────────────────────────── -->
+<!-- CTA MODAL -->
 <div id="cta-modal">
   <div class="cta-sheet">
     <div class="cta-handle"></div>
     <div class="cta-row">
-      <div class="cta-thumb-box">
+      <div class="cta-img-box">
         <img id="cta-thumb" src="" alt="">
       </div>
       <div class="cta-info">
@@ -399,7 +396,7 @@
   </div>
 </div>
 
-<!-- ── Toast ──────────────────────────────────────────────── -->
+<!-- TOAST -->
 <div id="toast">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <polyline points="20 6 9 17 4 12"/>
@@ -407,200 +404,233 @@
   <span id="toast-msg">Listo</span>
 </div>
 
-<!-- ── App Script ─────────────────────────────────────────── -->
-<script type="module">
-import * as THREE            from 'three';
-import { GLTFLoader }        from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader }       from 'three/addons/loaders/DRACOLoader.js';
-import { OrbitControls }     from 'three/addons/controls/OrbitControls.js';
-import { TransformControls } from 'three/addons/controls/TransformControls.js';
-import { RoomEnvironment }   from 'three/addons/environments/RoomEnvironment.js';
-
-/* ── Catálogo hardcodeado — sin dependencia de catalog.js ── */
-const CATALOG = {
+<!-- ═══════════════════════════════════════════════════════════
+     APP — script global, sin módulos, sin importmap
+     THREE ya está disponible como variable global
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+/* ════════════════════════════════════
+   CATÁLOGO — hardcodeado, sin imports
+   Rutas exactas del repo
+   ════════════════════════════════════ */
+var CATALOG = {
   'mueble': {
-    id: 'mueble',
-    name: 'Armario Clásico',
-    categoryLabel: 'Mobiliario',
-    priceFormatted: '$1.290',
-    glb:  'models/antique_wardrobe.glb',
-    usdz: 'models/Antique_Wardrobe.usdz',
-    thumbnail: 'thumbnails/mueble.svg',
-    specs: [
-      { label: 'Material', value: 'Madera maciza + latón' },
-      { label: 'Acabado',  value: 'Natural cera'           },
-      { label: 'Garantía', value: '5 años'                 },
-    ],
+    id:'mueble', name:'Armario Clásico',
+    categoryLabel:'Mobiliario', priceFormatted:'$1.290',
+    glb:'models/antique_wardrobe.glb',
+    usdz:'models/Antique_Wardrobe.usdz',
+    thumbnail:'thumbnails/mueble.svg',
+    specs:[
+      {label:'Material', value:'Madera maciza + latón'},
+      {label:'Acabado',  value:'Natural cera'},
+      {label:'Garantía', value:'5 años'},
+    ]
   },
   'silla-vintage': {
-    id: 'silla-vintage',
-    name: 'Silla Vintage',
-    categoryLabel: 'Sillas',
-    priceFormatted: '$490',
-    glb:  'models/vintage_chair.glb',
-    usdz: 'models/Vintage_Chair.usdz',
-    thumbnail: 'thumbnails/silla-vintage.svg',
-    specs: [
-      { label: 'Material', value: 'Roble + bouclé'   },
-      { label: 'Acabado',  value: 'Aceite natural'    },
-      { label: 'Garantía', value: '3 años'            },
-    ],
+    id:'silla-vintage', name:'Silla Vintage',
+    categoryLabel:'Sillas', priceFormatted:'$490',
+    glb:'models/vintage_chair.glb',
+    usdz:'models/Vintage_Chair.usdz',
+    thumbnail:'thumbnails/silla-vintage.svg',
+    specs:[
+      {label:'Material', value:'Roble + bouclé'},
+      {label:'Acabado',  value:'Aceite natural'},
+      {label:'Garantía', value:'3 años'},
+    ]
   },
   'lavabo': {
-    id: 'lavabo',
-    name: 'Lavabo Minimal',
-    categoryLabel: 'Baños',
-    priceFormatted: '$890',
-    glb:  'models/bathroom_sink__low_poly.glb',
-    usdz: 'models/Bathroom_Sink__Low_Poly.usdz',
-    thumbnail: 'thumbnails/lavabo.svg',
-    specs: [
-      { label: 'Material', value: 'Porcelana vitrificada' },
-      { label: 'Acabado',  value: 'Blanco mate'           },
-      { label: 'Garantía', value: '10 años'               },
-    ],
-  },
+    id:'lavabo', name:'Lavabo Minimal',
+    categoryLabel:'Baños', priceFormatted:'$890',
+    glb:'models/bathroom_sink__low_poly.glb',
+    usdz:'models/Bathroom_Sink__Low_Poly.usdz',
+    thumbnail:'thumbnails/lavabo.svg',
+    specs:[
+      {label:'Material', value:'Porcelana vitrificada'},
+      {label:'Acabado',  value:'Blanco mate'},
+      {label:'Garantía', value:'10 años'},
+    ]
+  }
 };
 
-/* ── PBR finishes ──────────────────────────────────────────── */
-const FINISHES = {
-  matte: { roughness:.88, metalness:.02, envMapIntensity:.20 },
-  satin: { roughness:.50, metalness:.10, envMapIntensity:.55 },
-  gloss: { roughness:.08, metalness:.20, envMapIntensity:1.1 },
-  metal: { roughness:.15, metalness:.95, envMapIntensity:1.7 },
+/* ════════════════════════════════════
+   PRODUCTO ACTUAL
+   ════════════════════════════════════ */
+var params  = new URLSearchParams(location.search);
+var pid     = params.get('product') || 'mueble';
+var product = CATALOG[pid] || CATALOG['mueble'];
+
+/* ════════════════════════════════════
+   PBR FINISHES
+   ════════════════════════════════════ */
+var FINISHES = {
+  matte: {roughness:.88, metalness:.02, envMapIntensity:.20},
+  satin: {roughness:.50, metalness:.10, envMapIntensity:.55},
+  gloss: {roughness:.08, metalness:.20, envMapIntensity:1.1},
+  metal: {roughness:.15, metalness:.95, envMapIntensity:1.7}
 };
 
-/* ── Color palette ─────────────────────────────────────────── */
-const PALETTE = [
-  { hex:'#8B6914', name:'Madera Natural' },
-  { hex:'#2A2A28', name:'Ébano' },
-  { hex:'#F0EBE3', name:'Blanco Arena' },
-  { hex:'#5C6470', name:'Gris Piedra' },
-  { hex:'#6B3D0A', name:'Nogal' },
-  { hex:'#2A5F42', name:'Verde Oliva' },
-  { hex:'#8B2020', name:'Terracota' },
-  { hex:'#1A3F6B', name:'Índigo' },
+/* ════════════════════════════════════
+   PALETA DE COLORES
+   ════════════════════════════════════ */
+var PALETTE = [
+  {hex:'#8B6914', name:'Madera Natural'},
+  {hex:'#2A2A28', name:'Ébano'},
+  {hex:'#F0EBE3', name:'Blanco Arena'},
+  {hex:'#5C6470', name:'Gris Piedra'},
+  {hex:'#6B3D0A', name:'Nogal'},
+  {hex:'#2A5F42', name:'Verde Oliva'},
+  {hex:'#8B2020', name:'Terracota'},
+  {hex:'#1A3F6B', name:'Índigo'}
 ];
 
-/* ── Resolución del producto desde URL ─────────────────────── */
-const params  = new URLSearchParams(location.search);
-const pid     = params.get('product') || 'mueble';
-const product = CATALOG[pid] || CATALOG['mueble'];
+/* ════════════════════════════════════
+   ESTADO
+   ════════════════════════════════════ */
+var S = {tool:'orbit', color:'#8B6914', finish:'matte'};
+var meshes = [], origMats = {}, pivot;
 
-/* ── Estado ────────────────────────────────────────────────── */
-const S = { tool:'orbit', color:'#8B6914', finish:'matte' };
-let meshes = [], origMats = new Map(), pivot;
+/* ════════════════════════════════════
+   HELPERS UI
+   ════════════════════════════════════ */
+function $(id){ return document.getElementById(id); }
 
-/* ── Helpers de UI ─────────────────────────────────────────── */
-const $ = id => document.getElementById(id);
-function setProgress(v) {
+function setProgress(v){
   $('lfill').style.width = v+'%';
   $('lpct').textContent  = Math.round(v)+'%';
 }
-function hideLoader() {
-  setTimeout(() => $('loader').classList.add('out'), 400);
-}
-let toastT;
-function toast(msg) {
-  $('toast-msg').textContent = msg;
-  $('toast').classList.add('show');
-  clearTimeout(toastT);
-  toastT = setTimeout(() => $('toast').classList.remove('show'), 3000);
+function hideLoader(){
+  setTimeout(function(){ $('loader').classList.add('out'); }, 400);
 }
 
-/* ── Poblar UI con datos del producto ──────────────────────── */
-document.title         = product.name + ' — Casa Palm';
+var toastTimer;
+function toast(msg){
+  $('toast-msg').textContent = msg;
+  $('toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ $('toast').classList.remove('show'); }, 3000);
+}
+
+/* ════════════════════════════════════
+   POBLAR UI CON DATOS DEL PRODUCTO
+   ════════════════════════════════════ */
+document.title = product.name + ' — Casa Palm';
 $('chip-name').textContent  = product.name;
 $('chip-price').textContent = product.priceFormatted;
 $('cta-name').textContent   = product.name;
 $('cta-cat').textContent    = product.categoryLabel + ' · Casa Palm';
 $('cta-price').textContent  = product.priceFormatted;
 $('cta-thumb').src          = product.thumbnail;
-$('cta-specs').innerHTML    = (product.specs||[]).map(s=>
-  `<div class="spec"><span class="spec-l">${s.label}</span><span class="spec-v">${s.value}</span></div>`
-).join('');
+$('cta-specs').innerHTML    = (product.specs||[]).map(function(s){
+  return '<div class="spec-item"><span class="spec-l">'+s.label+'</span><span class="spec-v">'+s.value+'</span></div>';
+}).join('');
 
-/* ── Configurar model-viewer para AR ───────────────────────── */
-const mv = $('mv');
+/* Configurar model-viewer y iOS AR link */
+var mv = $('mv');
 mv.setAttribute('src', product.glb);
 mv.setAttribute('ios-src', product.usdz);
 mv.setAttribute('alt', product.name);
 
-/* ── Configurar enlace iOS (pre-existing en DOM) ───────────── */
-const iosLink = $('ios-ar-link');
-const iosImg  = $('ios-ar-img');
-iosLink.href  = product.usdz;
-iosImg.src    = product.usdz;
+var iosAR    = $('ios-ar');
+var iosARImg = $('ios-ar-img');
+iosAR.href   = product.usdz;
+iosARImg.src = product.usdz;
 
-/* ══════════════════════════════════════════════════════════
-   THREE.JS VIEWER
-   ══════════════════════════════════════════════════════════ */
-const canvas = $('cv');
-const vp     = $('vp');
+/* ════════════════════════════════════
+   THREE.JS — usando variable global
+   (cargado via <script> tag arriba)
+   ════════════════════════════════════ */
+var canvas = $('cv');
+var vp     = $('vp');
 
-const renderer = new THREE.WebGLRenderer({
-  canvas, antialias:true, alpha:false, preserveDrawingBuffer:true
+/* Renderer */
+var renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  antialias: true,
+  alpha: false,
+  preserveDrawingBuffer: true
 });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(vp.clientWidth, vp.clientHeight, false);
-renderer.shadowMap.enabled  = true;
-renderer.shadowMap.type     = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace   = THREE.SRGBColorSpace;
-renderer.toneMapping        = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+renderer.outputEncoding    = THREE.sRGBEncoding; /* r134 API */
+renderer.toneMapping       = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.30;
 
-const scene = new THREE.Scene();
+/* Scene */
+var scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0B0B09);
-scene.fog = new THREE.FogExp2(0x09090A, 0.045);
+scene.fog        = new THREE.FogExp2(0x09090A, 0.045);
 
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+/* Environment (IBL) */
+var pmrem = new THREE.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+scene.environment = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
 pmrem.dispose();
 
-const camera = new THREE.PerspectiveCamera(44, vp.clientWidth/vp.clientHeight, 0.01, 500);
+/* Camera */
+var camera = new THREE.PerspectiveCamera(44, vp.clientWidth/vp.clientHeight, 0.01, 500);
 camera.position.set(2, 1.4, 3.5);
 
-/* Iluminación showroom cálida */
-const key = new THREE.DirectionalLight(0xFFF6E8, 2.5);
-key.position.set(5,10,6); key.castShadow = true;
-key.shadow.mapSize.set(2048,2048);
-Object.assign(key.shadow.camera,{left:-6,right:6,top:6,bottom:-6,near:.5,far:50});
-key.shadow.bias = -0.0003; key.shadow.normalBias = 0.025;
+/* Luces — showroom cálido */
+var key = new THREE.DirectionalLight(0xFFF6E8, 2.5);
+key.position.set(5, 10, 6);
+key.castShadow = true;
+key.shadow.mapSize.width  = 2048;
+key.shadow.mapSize.height = 2048;
+key.shadow.camera.left   = -6; key.shadow.camera.right = 6;
+key.shadow.camera.top    =  6; key.shadow.camera.bottom = -6;
+key.shadow.camera.near   = 0.5; key.shadow.camera.far   = 50;
+key.shadow.bias = -0.0003;
 scene.add(key);
-scene.add(Object.assign(new THREE.DirectionalLight(0xD5E5FF,.42),{position:new THREE.Vector3(-7,4,-5)}));
-scene.add(Object.assign(new THREE.DirectionalLight(0xFFE0A0,.58),{position:new THREE.Vector3(0,7,-8)}));
-scene.add(new THREE.HemisphereLight(0xFFF2D8,0x120A02,.32));
-scene.add(new THREE.AmbientLight(0xFFFAF2,.15));
 
-/* Suelo y grilla */
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(40,40),
-  new THREE.MeshStandardMaterial({color:0x0E0E0C,roughness:.95,metalness:0})
+var fill = new THREE.DirectionalLight(0xD5E5FF, 0.42);
+fill.position.set(-7, 4, -5); scene.add(fill);
+
+var rim = new THREE.DirectionalLight(0xFFE0A0, 0.58);
+rim.position.set(0, 7, -8); scene.add(rim);
+
+scene.add(new THREE.HemisphereLight(0xFFF2D8, 0x120A02, 0.32));
+scene.add(new THREE.AmbientLight(0xFFFAF2, 0.15));
+
+/* Suelo */
+var floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(40, 40),
+  new THREE.MeshStandardMaterial({color:0x0E0E0C, roughness:.95, metalness:0})
 );
-floor.rotation.x = -Math.PI/2; floor.receiveShadow = true;
+floor.rotation.x = -Math.PI/2;
+floor.receiveShadow = true;
 scene.add(floor);
-const grid = new THREE.GridHelper(20,40,0x1E1E1C,0x181816);
-grid.position.y = 0.001; scene.add(grid);
 
-/* OrbitControls */
-const orbit = new OrbitControls(camera, renderer.domElement);
-orbit.enableDamping = true; orbit.dampingFactor = .07;
-orbit.minDistance = .15; orbit.maxDistance = 80;
-orbit.maxPolarAngle = Math.PI/2 + .05;
-orbit.target.set(0,.6,0); orbit.update();
+var grid = new THREE.GridHelper(20, 40, 0x1E1E1C, 0x181816);
+grid.position.y = 0.001;
+scene.add(grid);
 
-/* TransformControls */
-const tctrl = new TransformControls(camera, renderer.domElement);
-tctrl.size = .70;
-tctrl.addEventListener('dragging-changed', e => { orbit.enabled = !e.value; });
-tctrl.addEventListener('objectChange', () => {
+/* Orbit controls */
+var orbit = new THREE.OrbitControls(camera, renderer.domElement);
+orbit.enableDamping    = true;
+orbit.dampingFactor    = 0.07;
+orbit.minDistance      = 0.15;
+orbit.maxDistance      = 80;
+orbit.maxPolarAngle    = Math.PI/2 + 0.05;
+orbit.target.set(0, 0.6, 0);
+orbit.update();
+
+/* Transform controls */
+var tctrl = new THREE.TransformControls(camera, renderer.domElement);
+tctrl.size = 0.70;
+tctrl.addEventListener('dragging-changed', function(e){
+  orbit.enabled = !e.value;
+});
+tctrl.addEventListener('objectChange', function(){
   if (!pivot) return;
-  const s = pivot.scale.x;
-  if (s<.20) pivot.scale.setScalar(.20);
-  if (s>3.50) pivot.scale.setScalar(3.50);
+  var s = pivot.scale.x;
+  if (s < 0.20) pivot.scale.setScalar(0.20);
+  if (s > 3.50) pivot.scale.setScalar(3.50);
 });
 scene.add(tctrl);
 
+/* Pivot group */
 pivot = new THREE.Group();
 scene.add(pivot);
 
@@ -608,142 +638,168 @@ scene.add(pivot);
 (function loop(){
   requestAnimationFrame(loop);
   orbit.update();
-  if (S.tool==='orbit') pivot.position.y = Math.sin(performance.now()*.00046)*.014;
-  renderer.render(scene,camera);
+  if (S.tool === 'orbit' && pivot) {
+    pivot.position.y = Math.sin(performance.now() * 0.00046) * 0.014;
+  }
+  renderer.render(scene, camera);
 })();
 
 /* Resize */
-window.addEventListener('resize', ()=>{
-  const W=vp.clientWidth,H=vp.clientHeight;
-  camera.aspect=W/H; camera.updateProjectionMatrix();
-  renderer.setSize(W,H,false);
-},{passive:true});
+window.addEventListener('resize', function(){
+  var W = vp.clientWidth, H = vp.clientHeight;
+  camera.aspect = W/H;
+  camera.updateProjectionMatrix();
+  renderer.setSize(W, H, false);
+}, {passive:true});
 
-/* ── Carga del modelo GLB ──────────────────────────────────── */
+/* ════════════════════════════════════
+   CARGA DE MODELOS GLB
+   Escala de Blender: NUNCA modificada
+   Solo centrado X/Z y piso Y
+   ════════════════════════════════════ */
 function loadModel(url) {
-  /* Limpiar escena */
-  tctrl.detach(); tctrl.visible=false;
-  while(pivot.children.length) pivot.remove(pivot.children[0]);
-  meshes.length=0; origMats.clear();
+  /* Limpiar */
+  tctrl.detach(); tctrl.visible = false;
+  while (pivot.children.length) pivot.remove(pivot.children[0]);
+  meshes.length = 0;
+  origMats = {};
 
-  const draco = new DRACOLoader();
-  draco.setDecoderPath('https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/');
-  const loader = new GLTFLoader();
+  var draco = new THREE.DRACOLoader();
+  draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+
+  var loader = new THREE.GLTFLoader();
   loader.setDRACOLoader(draco);
 
   setProgress(5);
 
-  loader.load(url,
-    gltf => {
+  loader.load(
+    url,
+    function(gltf) {
       setProgress(90);
-      const root = gltf.scene;
+      var root = gltf.scene;
 
-      /* ════════════════════════════════════════════════
-         POSICIÓN SOLAMENTE — escala de Blender intacta
-         ════════════════════════════════════════════════ */
-      const box    = new THREE.Box3().setFromObject(root);
-      const center = box.getCenter(new THREE.Vector3());
-      const size   = box.getSize(new THREE.Vector3());
-      root.position.x -= center.x;  // centrar X
-      root.position.z -= center.z;  // centrar Z
-      root.position.y -= box.min.y; // apoyar en suelo
-      /* root.scale NUNCA se modifica */
+      /* ══════════════════════════════════════════════
+         POSICIÓN SOLAMENTE — root.scale intacto
+         Los modelos vienen escalados desde Blender
+         ══════════════════════════════════════════════ */
+      var box    = new THREE.Box3().setFromObject(root);
+      var center = new THREE.Vector3();
+      var size   = new THREE.Vector3();
+      box.getCenter(center);
+      box.getSize(size);
 
-      root.traverse(n=>{
+      root.position.x -= center.x;   // centrar X
+      root.position.z -= center.z;   // centrar Z
+      root.position.y -= box.min.y;  // apoyar en suelo
+
+      /* Shadows + materiales */
+      root.traverse(function(n){
         if (!n.isMesh) return;
         n.castShadow = n.receiveShadow = true;
         meshes.push(n);
         if (n.material) {
           if (!n.material.isMeshStandardMaterial) {
             n.material = new THREE.MeshStandardMaterial({
-              color: n.material.color ?? new THREE.Color(0x8B6914),
-              map:   n.material.map   ?? null,
-              roughness:.72, metalness:.05
+              color:     n.material.color || new THREE.Color(0x8B6914),
+              map:       n.material.map   || null,
+              roughness: 0.72,
+              metalness: 0.05
             });
           }
-          origMats.set(n.uuid, n.material.clone());
+          origMats[n.uuid] = n.material.clone();
         }
       });
 
       pivot.add(root);
 
-      /* Cámara adaptada al tamaño real del modelo */
-      const fovRad  = camera.fov*(Math.PI/180);
-      const maxDim  = Math.max(size.x,size.y,size.z);
-      const dist    = ((maxDim*.5)/Math.tan(fovRad*.5))*1.90;
-      const targetY = size.y*.42;
-      camera.position.set(dist*.65, targetY+dist*.22, dist);
-      camera.near = Math.max(.01,dist*.008); camera.far = dist*60;
+      /* Cámara — se adapta al tamaño real del modelo */
+      var fovRad  = camera.fov * (Math.PI/180);
+      var maxDim  = Math.max(size.x, size.y, size.z);
+      var dist    = (maxDim * 0.5 / Math.tan(fovRad * 0.5)) * 1.90;
+      var targetY = size.y * 0.42;
+      camera.position.set(dist*0.65, targetY + dist*0.22, dist);
+      camera.near = Math.max(0.01, dist*0.008);
+      camera.far  = dist * 60;
       camera.updateProjectionMatrix();
-      orbit.target.set(0,targetY,0);
-      orbit.minDistance=dist*.18; orbit.maxDistance=dist*5;
+      orbit.target.set(0, targetY, 0);
+      orbit.minDistance = dist * 0.18;
+      orbit.maxDistance = dist * 5;
       orbit.update();
 
-      tctrl.attach(pivot); tctrl.visible=false;
+      tctrl.attach(pivot);
+      tctrl.visible = false;
       setProgress(100);
       hideLoader();
 
       /* Animación de entrada */
-      pivot.scale.setScalar(.001);
-      const t0=performance.now();
+      pivot.scale.setScalar(0.001);
+      var t0 = performance.now();
       (function enter(t){
-        const p=Math.min((t-t0)/680,1),e=1-Math.pow(1-p,3);
-        pivot.scale.setScalar(.001+.999*e);
-        if(p<1)requestAnimationFrame(enter);
+        var p = Math.min((t-t0)/700, 1);
+        var e = 1 - Math.pow(1-p, 3);
+        pivot.scale.setScalar(0.001 + 0.999*e);
+        if (p < 1) requestAnimationFrame(enter);
       })(t0);
     },
-    xhr=>{ if(xhr.total>0) setProgress(5+(xhr.loaded/xhr.total)*84); },
-    err=>{
-      console.warn('GLB no cargó:', err);
+    function(xhr){
+      if (xhr.total > 0) setProgress(5 + (xhr.loaded/xhr.total)*84);
+    },
+    function(err){
+      console.warn('GLB error:', err);
       buildFallback();
     }
   );
 }
 
-/* Fallback 3D si el GLB no carga */
+/* Geometría de muestra cuando no carga el GLB */
 function buildFallback() {
-  const g=new THREE.Group();
-  const wm=new THREE.MeshStandardMaterial({color:0x8B6914,roughness:.72,metalness:.04});
-  const mm=new THREE.MeshStandardMaterial({color:0xC8A96E,roughness:.20,metalness:.90});
-  const body=new THREE.Mesh(new THREE.BoxGeometry(1.2,.80,.42),wm);
-  body.position.y=.47; body.castShadow=body.receiveShadow=true; g.add(body);
-  [[-0.52,-0.17],[0.52,-0.17],[-0.52,.17],[.52,.17]].forEach(([x,z])=>{
-    const l=new THREE.Mesh(new THREE.CylinderGeometry(.022,.018,.12,10),mm);
-    l.position.set(x,.06,z); l.castShadow=true; g.add(l);
+  var wm = new THREE.MeshStandardMaterial({color:0x8B6914, roughness:.72, metalness:.04});
+  var mm = new THREE.MeshStandardMaterial({color:0xC8A96E, roughness:.20, metalness:.90});
+  var g  = new THREE.Group();
+
+  var body = new THREE.Mesh(new THREE.BoxGeometry(1.2,.80,.42), wm);
+  body.position.y = .47; body.castShadow = body.receiveShadow = true;
+  g.add(body);
+
+  [[-0.52,-0.17],[0.52,-0.17],[-0.52,.17],[.52,.17]].forEach(function(xz){
+    var l = new THREE.Mesh(new THREE.CylinderGeometry(.022,.018,.12,10), mm);
+    l.position.set(xz[0], .06, xz[1]); l.castShadow = true; g.add(l);
   });
-  [-0.30,.30].forEach(x=>{
-    const h=new THREE.Mesh(new THREE.TorusGeometry(.044,.009,8,24,Math.PI),mm);
-    h.position.set(x,.47,.224); h.rotation.z=Math.PI/2; h.castShadow=true; g.add(h);
+
+  [-0.30,.30].forEach(function(x){
+    var h = new THREE.Mesh(new THREE.TorusGeometry(.044,.009,8,24,Math.PI), mm);
+    h.position.set(x, .47, .224); h.rotation.z = Math.PI/2; h.castShadow = true; g.add(h);
   });
+
   pivot.add(g);
-  g.traverse(n=>{
-    if(!n.isMesh)return;
-    meshes.push(n); origMats.set(n.uuid,n.material.clone());
+  g.traverse(function(n){
+    if (!n.isMesh) return;
+    meshes.push(n); origMats[n.uuid] = n.material.clone();
   });
-  const box=new THREE.Box3().setFromObject(g);
-  const size=box.getSize(new THREE.Vector3());
-  const fovRad=camera.fov*(Math.PI/180);
-  const dist=((Math.max(size.x,size.y,size.z)*.5)/Math.tan(fovRad*.5))*1.9;
-  camera.position.set(dist*.65,size.y*.42+dist*.22,dist);
-  camera.near=Math.max(.01,dist*.008); camera.far=dist*60;
-  camera.updateProjectionMatrix();
-  orbit.target.set(0,size.y*.42,0);
-  orbit.minDistance=dist*.18; orbit.maxDistance=dist*5; orbit.update();
-  tctrl.attach(pivot); tctrl.visible=false;
+
+  camera.position.set(2, 1.4, 3.5);
+  orbit.target.set(0, .6, 0); orbit.update();
+  tctrl.attach(pivot); tctrl.visible = false;
   setProgress(100); hideLoader();
-  pivot.scale.setScalar(.001);
-  const t0=performance.now();
-  (function e(t){const p=Math.min((t-t0)/680,1),v=1-Math.pow(1-p,3);
-    pivot.scale.setScalar(.001+.999*v);if(p<1)requestAnimationFrame(e);})(t0);
-  toast('Modelo de muestra — subir GLB para ver el real');
+
+  pivot.scale.setScalar(0.001);
+  var t0 = performance.now();
+  (function e(t){
+    var p=Math.min((t-t0)/700,1),v=1-Math.pow(1-p,3);
+    pivot.scale.setScalar(.001+.999*v); if(p<1)requestAnimationFrame(e);
+  })(t0);
+  toast('Modelo de muestra — verificar nombre del archivo GLB');
 }
 
-/* ── Material / Color ──────────────────────────────────────── */
+/* ════════════════════════════════════
+   CAMBIO DE COLOR Y ACABADO
+   ════════════════════════════════════ */
 function applyMaterial(hex, finish) {
   if (!meshes.length) return;
-  const col=new THREE.Color(hex), fp=FINISHES[finish]||FINISHES.matte;
-  meshes.forEach(m=>{
-    if (!m.material?.isMeshStandardMaterial) return;
+  var col = new THREE.Color(hex);
+  var fp  = FINISHES[finish] || FINISHES.matte;
+  meshes.forEach(function(m){
+    if (!m.material || !m.material.isMeshStandardMaterial) return;
     m.material.color.copy(col);
     m.material.roughness       = fp.roughness;
     m.material.metalness       = fp.metalness;
@@ -752,141 +808,181 @@ function applyMaterial(hex, finish) {
   });
 }
 
-/* ── Tool system ───────────────────────────────────────────── */
-const HINTS = {
-  orbit:'Arrastra para rotar · Pellizca para zoom',
-  move:'Arrastra para mover el objeto',
-  rotate:'Eje Y (verde) → girá el objeto',
-  scale:'Arrastra para cambiar tamaño',
-  color:'Elegí color y acabado',
+/* ════════════════════════════════════
+   HERRAMIENTAS
+   ════════════════════════════════════ */
+var HINTS = {
+  orbit:  'Arrastra para rotar  ·  Pellizca para zoom',
+  move:   'Arrastra para mover el objeto',
+  rotate: 'Eje Y (verde) → girá el objeto',
+  scale:  'Arrastra para cambiar el tamaño',
+  color:  'Elegí color y acabado'
 };
-function setTool(t){
-  S.tool=t;
-  document.querySelectorAll('.tbtn').forEach(b=>b.classList.toggle('on',b.dataset.tool===t));
-  $('hint').textContent=HINTS[t]||'';
-  $('color-panel').classList.toggle('show',t==='color');
-  $('scan').classList.toggle('show',t==='move');
-  if(t==='orbit'){tctrl.visible=false;}
-  else if(t==='move'){tctrl.mode='translate';tctrl.showX=true;tctrl.showY=false;tctrl.showZ=true;tctrl.visible=true;}
-  else if(t==='rotate'){tctrl.mode='rotate';tctrl.showX=false;tctrl.showY=true;tctrl.showZ=false;tctrl.visible=true;}
-  else if(t==='scale'){tctrl.mode='scale';tctrl.showX=tctrl.showY=tctrl.showZ=true;tctrl.visible=true;}
-  else if(t==='color'){tctrl.visible=false;}
+
+function setTool(t) {
+  S.tool = t;
+  document.querySelectorAll('.tbtn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.tool === t);
+  });
+  $('hint').textContent = HINTS[t] || '';
+  $('color-panel').classList.toggle('show', t === 'color');
+  $('scan').classList.toggle('show', t === 'move');
+
+  if (t === 'orbit')  { tctrl.visible = false; }
+  else if (t === 'move') {
+    tctrl.mode='translate'; tctrl.showX=true; tctrl.showY=false; tctrl.showZ=true;
+    tctrl.visible=true;
+  } else if (t === 'rotate') {
+    tctrl.mode='rotate'; tctrl.showX=false; tctrl.showY=true; tctrl.showZ=false;
+    tctrl.visible=true;
+  } else if (t === 'scale') {
+    tctrl.mode='scale'; tctrl.showX=tctrl.showY=tctrl.showZ=true;
+    tctrl.visible=true;
+  } else if (t === 'color') { tctrl.visible=false; }
 }
 
-/* ── Screenshot con branding ───────────────────────────────── */
-function takeShot(){
-  renderer.render(scene,camera);
-  const src=canvas,out=document.createElement('canvas');
-  out.width=src.width; out.height=src.height;
-  const ctx=out.getContext('2d');
-  ctx.drawImage(src,0,0);
-  const barH=Math.max(56,src.height*.06);
-  const grad=ctx.createLinearGradient(0,src.height-barH,0,src.height);
-  grad.addColorStop(0,'rgba(8,8,7,0)');
-  grad.addColorStop(.35,'rgba(8,8,7,.86)');
-  grad.addColorStop(1,'rgba(8,8,7,.97)');
-  ctx.fillStyle=grad;
-  ctx.fillRect(0,src.height-barH,src.width,barH);
-  const px=src.width*.032,py=src.height-barH*.28;
-  ctx.font=`300 ${barH*.40}px 'Cormorant Garamond',serif`;
-  ctx.fillStyle='#C8A96E';
-  ctx.fillText('CASA PALM',px,py);
-  ctx.font=`400 ${barH*.22}px 'DM Sans',sans-serif`;
-  ctx.fillStyle='rgba(245,240,232,.40)';
-  ctx.fillText(`${product.name}  ·  casapalm.com`,px,py+barH*.30);
-  out.toBlob(blob=>{
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=`casapalm-${Date.now()}.jpg`;
+/* ════════════════════════════════════
+   SCREENSHOT CON BRANDING
+   ════════════════════════════════════ */
+function takeShot() {
+  renderer.render(scene, camera);
+  var src = canvas;
+  var out = document.createElement('canvas');
+  out.width = src.width; out.height = src.height;
+  var ctx = out.getContext('2d');
+  ctx.drawImage(src, 0, 0);
+
+  var barH = Math.max(56, src.height * 0.06);
+  var grad = ctx.createLinearGradient(0, src.height-barH, 0, src.height);
+  grad.addColorStop(0, 'rgba(8,8,7,0)');
+  grad.addColorStop(.35, 'rgba(8,8,7,.86)');
+  grad.addColorStop(1, 'rgba(8,8,7,.97)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, src.height-barH, src.width, barH);
+
+  var px = src.width*0.032, py = src.height - barH*0.28;
+  ctx.font         = '300 '+(barH*.40)+'px Cormorant Garamond, serif';
+  ctx.fillStyle    = '#C8A96E';
+  ctx.fillText('CASA PALM', px, py);
+  ctx.font         = '400 '+(barH*.22)+'px DM Sans, sans-serif';
+  ctx.fillStyle    = 'rgba(245,240,232,.40)';
+  ctx.fillText(product.name + '  ·  casapalm.com', px, py + barH*0.30);
+
+  out.toBlob(function(blob){
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'casapalm-'+Date.now()+'.jpg';
     a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),6000);
-  },'image/jpeg',.93);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 6000);
+  }, 'image/jpeg', 0.93);
   toast('Captura guardada ✓');
 }
 
-/* ══════════════════════════════════════════════════════════
-   AR — LANZAMIENTO CORRECTO PARA iOS Y ANDROID
-   ══════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════
+   AR — iOS y Android
+   ════════════════════════════════════ */
 $('btn-ar').addEventListener('click', function() {
-  const isIOS     = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const isAndroid = /Android/i.test(navigator.userAgent);
+  var isIOS     = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var isAndroid = /Android/i.test(navigator.userAgent);
 
   if (isIOS) {
     /*
-      iOS AR Quick Look:
-      - Requiere elemento <a rel="ar"> pre-existente en el DOM
-      - El href debe apuntar a un archivo .usdz válido
-      - El click debe ser sincrónico dentro del handler del usuario
+      iOS AR Quick Look
+      El <a rel="ar"> ya está en el DOM desde el inicio.
+      Se actualiza el href y se dispara el click.
+      Esto abre la cámara AR directamente.
     */
-    iosLink.href = product.usdz;
-    iosImg.src   = product.usdz;
-    iosLink.click();
-    toast('Abriendo AR en tu iPhone…');
+    iosAR.href   = product.usdz;
+    iosARImg.src = product.usdz;
+    iosAR.click();
+    toast('Abriendo AR Quick Look…');
 
   } else if (isAndroid) {
     /*
-      Android Scene Viewer:
-      - Requiere URL absoluta del GLB
-      - Se lanza via Intent URL o URL directa de Scene Viewer
+      Android: model-viewer maneja WebXR + Scene Viewer
+      activateAR() se llama directo desde el gesto del usuario
     */
-    const absGlb = new URL(product.glb, window.location.href).href;
-    const sceneUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(absGlb)}&mode=ar_preferred&title=${encodeURIComponent(product.name)}#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(absGlb)};end;`;
-    window.location.href = sceneUrl;
-    toast('Abriendo AR en tu Android…');
+    if (mv.canActivateAR) {
+      mv.activateAR();
+      toast('Iniciando AR…');
+    } else {
+      /* Fallback Scene Viewer directo */
+      var absGlb = new URL(product.glb, window.location.href).href;
+      var url = 'intent://arvr.google.com/scene-viewer/1.0?file='
+        + encodeURIComponent(absGlb)
+        + '&mode=ar_preferred&title='
+        + encodeURIComponent(product.name)
+        + '#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;end;';
+      window.location.href = url;
+      toast('Abriendo AR en Android…');
+    }
 
   } else {
-    /*
-      Desktop: mostrar CTA con información del producto
-    */
+    /* Desktop: mostrar info del producto */
     openCTA();
     toast('AR disponible en iPhone y Android');
   }
 });
 
-/* ── Swatches de color ─────────────────────────────────────── */
-const swatchContainer = $('swatches');
-PALETTE.forEach((col,i)=>{
-  const sw=document.createElement('div');
-  sw.className='sw'+(i===0?' on':'');
-  sw.style.background=col.hex;
-  sw.title=col.name;
-  sw.addEventListener('click',()=>{
-    swatchContainer.querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
+/* ════════════════════════════════════
+   SWATCHES DE COLOR
+   ════════════════════════════════════ */
+var swatchContainer = $('swatches');
+PALETTE.forEach(function(col, i){
+  var sw = document.createElement('div');
+  sw.className = 'sw' + (i===0 ? ' on' : '');
+  sw.style.background = col.hex;
+  sw.title = col.name;
+  sw.addEventListener('click', function(){
+    swatchContainer.querySelectorAll('.sw').forEach(function(s){ s.classList.remove('on'); });
     sw.classList.add('on');
-    S.color=col.hex;
-    applyMaterial(S.color,S.finish);
+    S.color = col.hex;
+    applyMaterial(S.color, S.finish);
     toast(col.name);
   });
   swatchContainer.appendChild(sw);
 });
 
-/* ── Finish buttons ────────────────────────────────────────── */
-document.querySelectorAll('.fbtn').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+/* ════════════════════════════════════
+   FINISH BUTTONS
+   ════════════════════════════════════ */
+document.querySelectorAll('.fbtn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.fbtn').forEach(function(b){ b.classList.remove('on'); });
     btn.classList.add('on');
-    S.finish=btn.dataset.finish;
-    applyMaterial(S.color,S.finish);
+    S.finish = btn.dataset.finish;
+    applyMaterial(S.color, S.finish);
   });
 });
 
-/* ── Tool buttons ──────────────────────────────────────────── */
-document.querySelectorAll('.tbtn').forEach(btn=>{
-  btn.addEventListener('click',()=>setTool(btn.dataset.tool));
+/* ════════════════════════════════════
+   TOOL BUTTONS
+   ════════════════════════════════════ */
+document.querySelectorAll('.tbtn').forEach(function(btn){
+  btn.addEventListener('click', function(){ setTool(btn.dataset.tool); });
 });
 
-/* ── CTA modal ─────────────────────────────────────────────── */
+/* ════════════════════════════════════
+   CTA MODAL
+   ════════════════════════════════════ */
 function openCTA()  { $('cta-modal').classList.add('show'); }
 function closeCTA() { $('cta-modal').classList.remove('show'); }
+
 $('btn-info').addEventListener('click', openCTA);
 $('btn-cta-close').addEventListener('click', closeCTA);
-$('btn-buy').addEventListener('click',()=>window.open('https://casapalm.com','_blank'));
-$('cta-modal').addEventListener('click',e=>{ if(e.target===$('cta-modal')) closeCTA(); });
+$('btn-buy').addEventListener('click', function(){ window.open('https://casapalm.com','_blank'); });
+$('cta-modal').addEventListener('click', function(e){
+  if (e.target === $('cta-modal')) closeCTA();
+});
 
-/* ── Screenshot ────────────────────────────────────────────── */
+/* ════════════════════════════════════
+   SCREENSHOT
+   ════════════════════════════════════ */
 $('btn-shot').addEventListener('click', takeShot);
 
-/* ── Iniciar carga del modelo ──────────────────────────────── */
+/* ════════════════════════════════════
+   INICIAR
+   ════════════════════════════════════ */
 loadModel(product.glb);
 </script>
 </body>
